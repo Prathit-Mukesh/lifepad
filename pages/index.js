@@ -3,10 +3,10 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import SiteNav from '../components/SiteNav'
 import { GROUPS, TOTAL_CHAPTERS, QUESTIONS_PER_CHAPTER } from '../lib/curriculum'
-import { loadGym, loadLearn, levelFromXp } from '../lib/store'
+import { loadLearn } from '../lib/store'
 
 export default function HomePage() {
-  const [stats, setStats] = useState({ chaptersDone: 0, streak: 0, level: 1 })
+  const [chaptersDone, setChaptersDone] = useState(0)
 
   useEffect(() => {
     const learn = loadLearn()
@@ -15,8 +15,7 @@ export default function HomePage() {
       const gp = learn[g.id] || {}
       done += Object.keys(gp).filter((k) => k !== 'lastGroup' && gp[k] && gp[k].total).length
     }
-    const gym = loadGym()
-    setStats({ chaptersDone: done, streak: gym.streak || 0, level: levelFromXp(gym.xp) })
+    setChaptersDone(done)
   }, [])
 
   return (
@@ -35,13 +34,13 @@ export default function HomePage() {
             Apps expire. Syllabi get rewritten. AI rewrites job descriptions yearly.
             What compounds is the ability to think clearly, handle numbers, judge evidence,
             and keep learning — at any age. NEEV trains exactly that: structured chapters for
-            your stage of life, a daily cognitive gym that serves a fresh workout every single day,
+            your stage of life, the Prajnify brain gym with fresh challenges every single day,
             and LifePad to run the rest of your life.
           </p>
           <div className="hero-note">school student, college, working or at home — your path is here ↷</div>
           <br />
           <Link href="/learn"><button className="hero-cta">Start learning ↓</button></Link>{' '}
-          <Link href="/gym"><button className="hero-cta gold" style={{ marginLeft: 10 }}>Today&apos;s workout 🔥</button></Link>
+          <Link href="/gym"><button className="hero-cta gold" style={{ marginLeft: 10 }}>Train your brain 🧠</button></Link>
         </div>
       </section>
 
@@ -57,9 +56,9 @@ export default function HomePage() {
         <div className="section-head">
           <h2>One home, three rooms</h2>
           <span className="count">
-            {stats.chaptersDone > 0 || stats.streak > 0
-              ? `You: ${stats.chaptersDone} chapters done · 🔥 ${stats.streak}-day streak · Gym level ${stats.level}`
-              : `${TOTAL_CHAPTERS} chapters · ${TOTAL_CHAPTERS * QUESTIONS_PER_CHAPTER}+ questions · a new workout daily`}
+            {chaptersDone > 0
+              ? `You: ${chaptersDone}/${TOTAL_CHAPTERS} chapters done`
+              : `${TOTAL_CHAPTERS} chapters · ${TOTAL_CHAPTERS * QUESTIONS_PER_CHAPTER}+ questions · 11 training modules`}
           </span>
         </div>
         <div className="pillars">
@@ -75,15 +74,16 @@ export default function HomePage() {
             <span className="p-go">Pick your path →</span>
           </Link>
           <Link href="/gym" className="pillar">
-            <span className="p-chip" style={{ background: '#E1595C' }}>🔥</span>
-            <span className="p-meta">A new set every day</span>
-            <h3>Daily Gym</h3>
+            <span className="p-chip" style={{ background: '#7B5EFF' }}>🧠</span>
+            <span className="p-meta">Ancient wisdom · modern cognition</span>
+            <h3>Prajnify</h3>
             <p>
-              Five quick game rounds — speed math, memory matrix, focus filter, pattern hunt
-              and the odd one out. The set evolves every single day. Keep the streak alive,
-              earn XP, level up, collect badges.
+              Eleven cognitive training modules — Math Sprint, Logic Grid, Neural Memory,
+              Word Forge, Mind Writer, Situation Intel, Brain Crusher and more. Earn Points,
+              Gold and Diamonds, build your Brain IQ, and keep the streak alive with
+              fresh challenges every day.
             </p>
-            <span className="p-go">Today&apos;s workout →</span>
+            <span className="p-go">Enter the gym →</span>
           </Link>
           <Link href="/lifepad" className="pillar">
             <span className="p-chip" style={{ background: '#7C6AFF' }}>✨</span>
