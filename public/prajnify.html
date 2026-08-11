@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#07071a">
+<title>Prajnify — Ancient Wisdom · Modern Cognition</title>
+<meta name="description" content="Prajnify: 11 cognitive training modules. Earn Points, Gold and Diamonds. Build your Brain IQ.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<style>
+/* ═══════════════ RESET & BASE ═══════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100vh;background:#07071a;color:#E8E4FF;
+  font-family:'DM Sans',system-ui,sans-serif;overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font-family:inherit;color:inherit;border:none;background:none;outline:none}
+button{cursor:pointer}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2a1a6e;border-radius:9px}
+::selection{background:rgba(255,159,46,.3);color:#fff}
+
+/* ═══════════════ TOKENS ═══════════════ */
+:root{
+  --bg:#07071a; --bg1:#0d0d26; --bg2:#131338;
+  --saffron:#FF9F2E; --indigo:#7B5EFF; --teal:#2EC9B0; --rose:#FF5F8F;
+  --sky:#38C6F4; --lime:#7EDD62; --violet:#C77DFF; --gold:#FFD060;
+  --stress:#FF6B35; --focus:#00E5C4; --reading:#F06AFF;
+  --ok:#4ECD7A; --bad:#FF5F8F;
+  --text:#E8E4FF; --muted:#4a4875; --faint:#1e1e50;
+  --glass:rgba(255,255,255,.028);
+  --line:rgba(255,255,255,.07);
+}
+
+/* ═══════════════ TYPOGRAPHY ═══════════════ */
+.cin{font-family:'Cinzel',Georgia,serif}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.dm{font-family:'DM Sans',sans-serif}
+
+/* ═══════════════ ANIMATIONS ═══════════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes pulseDim{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes pop{0%{opacity:1;transform:translate(-50%,0) scale(1)}80%{opacity:.75}100%{opacity:0;transform:translate(-50%,-100px) scale(1.7)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}60%{transform:translateX(9px)}80%{transform:translateX(-5px)}}
+@keyframes correctGlow{0%{box-shadow:0 0 0 0 rgba(78,205,122,.75)}100%{box-shadow:0 0 0 26px rgba(78,205,122,0)}}
+@keyframes streakBurn{0%,100%{filter:hue-rotate(0) brightness(1)}50%{filter:hue-rotate(16deg) brightness(1.45)}}
+@keyframes mandalaSpin{to{transform:rotate(360deg)}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.11)}28%{transform:scale(1)}}
+@keyframes shimmerSweep{0%{background-position:-500px 0}100%{background-position:500px 0}}
+@keyframes ripple{0%{transform:scale(.2);opacity:.55}100%{transform:scale(4);opacity:0}}
+@keyframes flashIn{0%{transform:scale(.85);opacity:.4}100%{transform:scale(1);opacity:1}}
+
+/* ═══════════════ BACKDROP ═══════════════ */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#bg .grad{position:absolute;inset:0}
+#bg .g1{background:radial-gradient(ellipse 80% 60% at 15% 8%,rgba(123,94,255,.10),transparent 70%)}
+#bg .g2{background:radial-gradient(ellipse 70% 80% at 88% 92%,rgba(46,201,176,.075),transparent 70%)}
+#bg .g3{background:radial-gradient(ellipse 55% 45% at 50% 48%,rgba(255,159,46,.045),transparent 70%)}
+#bg .scan{background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.006) 3px,rgba(255,255,255,.006) 4px)}
+#bg .orb{position:absolute;border-radius:50%;animation:floatY var(--dur,34s) ease-in-out infinite}
+#bg .ring{position:absolute;border-radius:50%;animation:mandalaSpin var(--rd,60s) linear infinite}
+
+/* ═══════════════ SHELL ═══════════════ */
+#shell{position:relative;z-index:1;max-width:500px;margin:0 auto;padding:16px 14px 80px;min-height:100vh}
+
+/* ═══════════════ GLASS CARD ═══════════════ */
+.card{
+  background:var(--glass);border:1px solid var(--line);border-radius:20px;
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.card.glow{box-shadow:0 0 34px var(--gc,rgba(123,94,255,.12)),inset 0 1px 0 rgba(255,255,255,.07)}
+
+/* ═══════════════ LIFT ═══════════════ */
+.lift{transition:transform .17s cubic-bezier(.34,1.56,.64,1),box-shadow .17s,border-color .17s,background .17s}
+.lift:hover{transform:translateY(-3px)}
+.lift:active{transform:scale(.965) translateY(0)}
+
+/* ═══════════════ BUTTON ═══════════════ */
+.btn{
+  border-radius:12px;padding:13px 22px;font-weight:600;font-size:14px;
+  letter-spacing:.3px;color:#fff;display:inline-flex;align-items:center;
+  justify-content:center;gap:8px;transition:all .2s;border:1.5px solid transparent;
+}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.full{width:100%}
+.btn.sm{padding:9px 15px;font-size:12px;border-radius:10px}
+.btn.ghost{background:transparent}
+
+/* ═══════════════ ANSWER BUTTON ═══════════════ */
+.ans{
+  width:100%;display:flex;align-items:center;gap:11px;text-align:left;
+  background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.09);
+  border-radius:13px;padding:14px 16px;font-size:13.5px;font-weight:500;
+  color:#fff;transition:all .2s;
+}
+.ans:not(.locked):hover{background:rgba(255,255,255,.07);transform:translateY(-2px)}
+.ans.ok{background:rgba(78,205,122,.15);border-color:var(--ok);animation:correctGlow .55s ease}
+.ans.bad{background:rgba(255,95,143,.15);border-color:var(--bad);animation:shake .42s ease}
+.ans.locked{cursor:default}
+.ans .lbl{
+  width:24px;height:24px;flex:0 0 24px;border-radius:7px;
+  background:rgba(255,255,255,.07);display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ═══════════════ TAG / CHIP ═══════════════ */
+.tag{
+  display:inline-flex;align-items:center;gap:5px;border-radius:99px;
+  padding:4px 11px;font-size:11px;font-weight:600;letter-spacing:.5px;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ═══════════════ INPUTS ═══════════════ */
+.inp{
+  width:100%;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:13px 16px;font-size:14px;color:#fff;transition:border-color .2s,background .2s;
+}
+.inp:focus{border-color:rgba(123,94,255,.6);background:rgba(255,255,255,.07)}
+.inp::placeholder{color:var(--muted)}
+textarea.inp{min-height:120px;resize:vertical;line-height:1.75;font-size:13.5px}
+
+/* ═══════════════ PROGRESS BAR ═══════════════ */
+.bar{height:5px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:99px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+
+/* ═══════════════ CURRENCY ═══════════════ */
+.cur{display:flex;gap:6px;flex-wrap:wrap}
+.cur>span{
+  display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.05);
+  border-radius:10px;padding:5px 11px;font-size:12px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ═══════════════ MODULE TILE ═══════════════ */
+.mod{
+  display:flex;align-items:center;gap:13px;border-radius:16px;
+  padding:15px 16px;border:1px solid;border-left-width:3px;
+}
+.mod.full{opacity:.55;cursor:not-allowed}
+.mod .ico{font-size:24px;flex:0 0 auto;line-height:1}
+.mod .body{flex:1;min-width:0}
+.mod .name{font-weight:600;font-size:14px;color:#fff}
+.mod .desc{font-size:11px;color:var(--muted);margin-top:1px}
+.mod .meter{flex:0 0 auto;text-align:right}
+
+/* ═══════════════ TABS ═══════════════ */
+.tabs{display:grid;gap:5px;background:rgba(255,255,255,.04);border-radius:14px;padding:4px}
+.tabs>button{border-radius:11px;padding:9px 4px;font-weight:600;font-size:12px;color:var(--muted);transition:all .2s}
+.tabs>button.on{background:rgba(255,255,255,.1);color:#fff}
+
+/* ═══════════════ SCORE POP ═══════════════ */
+.pop{
+  position:fixed;top:34%;left:50%;font-size:36px;font-weight:700;
+  font-family:'Cinzel',serif;color:var(--gold);text-shadow:0 0 24px var(--gold);
+  animation:pop .95s ease forwards;pointer-events:none;z-index:9999;
+}
+
+/* ═══════════════ MEMORY GRID ═══════════════ */
+.memgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.memgrid>button{aspect-ratio:1;border-radius:13px;transition:transform .15s}
+.memgrid>button:active{transform:scale(.9)}
+
+/* ═══════════════ MODAL ═══════════════ */
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9000;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:fadeIn .22s ease;
+}
+
+/* ═══════════════ TOAST ═══════════════ */
+#toast{
+  position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:9500;
+  display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;
+}
+#toast>div{
+  background:rgba(20,18,50,.96);border:1px solid rgba(123,94,255,.4);
+  border-radius:12px;padding:11px 18px;font-size:13px;font-weight:500;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadeUp .3s ease;
+  backdrop-filter:blur(20px);max-width:340px;text-align:center;
+}
+
+/* ═══════════════ UTILITIES ═══════════════ */
+.row{display:flex;align-items:center}
+.between{justify-content:space-between}
+.center{justify-content:center}
+.col{display:flex;flex-direction:column}
+.g4{gap:4px}.g6{gap:6px}.g8{gap:8px}.g9{gap:9px}.g10{gap:10px}
+.g12{gap:12px}.g14{gap:14px}.g16{gap:16px}.g18{gap:18px}
+.tc{text-align:center}.tr{text-align:right}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.mut{color:var(--muted)}
+.anim-up{animation:fadeUp .4s ease}
+.anim-in{animation:scaleIn .34s ease}
+.hide{display:none!important}
+
+/* ═══════════════ DEMO BANNER ═══════════════ */
+#demoflag{
+  position:fixed;top:0;left:0;right:0;z-index:8000;
+  background:linear-gradient(90deg,#FF9F2E,#7B5EFF);
+  color:#fff;font-size:11px;font-weight:700;letter-spacing:1.4px;
+  text-align:center;padding:5px 10px;font-family:'JetBrains Mono',monospace;
+}
+#demoflag+#shell{padding-top:38px}
+
+@media(max-width:380px){
+  .mod .desc{display:none}
+  .btn{padding:12px 16px;font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<div id="demoflag">DEMO BUILD · PRAJNIFY v1.0 · DATA SAVED LOCALLY IN YOUR BROWSER</div>
+<div id="bg"></div>
+<div id="shell"></div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ══════════════════════════════════════════════════════════════════
+   PRAJNIFY — Single-file demo build
+   Ancient Wisdom · Modern Cognition
+══════════════════════════════════════════════════════════════════ */
+
+/* ─────────── THEME ─────────── */
+const P = {
+  saffron:"#FF9F2E", indigo:"#7B5EFF", teal:"#2EC9B0", rose:"#FF5F8F",
+  sky:"#38C6F4", lime:"#7EDD62", violet:"#C77DFF", gold:"#FFD060",
+  math:"#FF5F8F", logic:"#7B5EFF", memory:"#2EC9B0", word:"#FFD060",
+  writing:"#C77DFF", sit:"#FF9F2E", geo:"#38C6F4", gk:"#7EDD62",
+  stress:"#FF6B35", focus:"#00E5C4", reading:"#F06AFF",
+  ok:"#4ECD7A", bad:"#FF5F8F", text:"#E8E4FF", muted:"#4a4875"
+};
+
+/* ─────────── UTILS ─────────── */
+const $  = s => document.querySelector(s);
+const el = id => document.getElementById(id);
+const rand = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const pick = a => a[rand(0,a.length-1)];
+const shuffle = a => { const x=[...a]; for(let i=x.length-1;i>0;i--){const j=rand(0,i);[x[i],x[j]]=[x[j],x[i]];} return x; };
+const today = () => new Date().toDateString();
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const wc = s => (s||"").trim().split(/\s+/).filter(Boolean).length;
+
+const LS = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+
+function toast(msg, ms){
+  const box = el('toast');
+  const d = document.createElement('div');
+  d.textContent = msg;
+  box.appendChild(d);
+  setTimeout(()=>{ d.style.transition='opacity .3s'; d.style.opacity='0'; setTimeout(()=>d.remove(),320); }, ms||2200);
+}
+
+/* ─────────── CURRENCY ─────────── */
+function addPoints(u, pts){
+  let p=u.points+pts, g=u.gold, d=u.diamonds;
+  while(p>=100){ p-=100; g++; }
+  while(g>=100){ g-=100; d++; }
+  return Object.assign({}, u, { points:p, gold:g, diamonds:d, totalPts:(u.totalPts||0)+pts });
+}
+const iqOf = u => Math.min(180, 85 + Math.floor((u.totalPts||0)/40));
+function rankOf(iq){
+  if(iq>=160) return {label:"Diamond Sage",   icon:"💎", color:P.sky};
+  if(iq>=140) return {label:"Gold Scholar",   icon:"🥇", color:P.gold};
+  if(iq>=120) return {label:"Silver Thinker", icon:"🥈", color:"#C0C0C0"};
+  if(iq>=100) return {label:"Bronze Learner", icon:"🥉", color:"#CD7F32"};
+  return             {label:"Rookie Mind",    icon:"🌱", color:P.teal};
+}
+
+/* ═══════════════════════════════════════════════════
+   CONTENT BANKS
+═══════════════════════════════════════════════════ */
+
+/* ── MATH (generated) ── */
+function genMath(level){
+  const t = Math.min(level,10);
+  const ops = t<=2?["+","-"] : t<=4?["+","-","x"] : t<=7?["+","-","x","/"] : ["x","/","sq","rt","pct"];
+  const op = pick(ops);
+  let q, ans;
+  if(op==="+"){ const a=rand(t*8,t*40), b=rand(t*5,t*25); q=a+" + "+b; ans=a+b; }
+  else if(op==="-"){ const a=rand(t*20,t*60), b=rand(5,Math.max(6,t*18)); q=a+" − "+b; ans=a-b; }
+  else if(op==="x"){ const a=rand(2,t+14), b=rand(2,t+10); q=a+" × "+b; ans=a*b; }
+  else if(op==="/"){ const b=rand(2,14), c=rand(2,18); q=(b*c)+" ÷ "+b; ans=c; }
+  else if(op==="sq"){ const a=rand(2,22); q=a+"²"; ans=a*a; }
+  else if(op==="rt"){ const a=rand(1,25); q="√"+(a*a); ans=a; }
+  else { const a=rand(10,99), b=rand(10,99); q=a+"% of "+b; ans=Math.round(a*b/100); }
+  const wrong=new Set(); const offs=[-15,-10,-7,-5,-4,-3,-2,-1,1,2,3,4,5,7,10,15];
+  let guard=0;
+  while(wrong.size<3 && guard++<200){ const w=ans+pick(offs); if(w!==ans && w>0) wrong.add(w); }
+  while(wrong.size<3){ wrong.add(ans+wrong.size+1); }
+  return { q:q, ans:ans, opts:shuffle([ans].concat([...wrong])) };
+}
+
+/* ── LOGIC ── */
+const LOGIC = [
+ {q:"All dolphins are mammals. All mammals breathe air. Therefore dolphins:",o:["Live only in water","Breathe air","Are fish","Have gills"],a:1},
+ {q:"If A→B, B→C and C→D, which must be true?",o:["D→A","A→D","B→D only","C→A"],a:1},
+ {q:"A bat and ball cost ₹110 together. The bat costs ₹100 more than the ball. What does the ball cost?",o:["₹10","₹5","₹15","₹20"],a:1},
+ {q:"You have 8 coins; one is heavier. Minimum weighings on a balance scale to find it?",o:["1","2","3","4"],a:1},
+ {q:"What comes next: 1, 4, 9, 16, 25, ___?",o:["30","36","42","49"],a:1},
+ {q:"A clock shows 6:30. What is the angle between the hands?",o:["0°","15°","180°","90°"],a:1},
+ {q:"All X are Y. Some Y are Z. Which is necessarily true?",o:["All X are Z","Some X are Z","No X are Z","Cannot conclude"],a:3},
+ {q:"Three boxes: Red=Apples, Blue=Oranges, Green=Both. Every label is WRONG. You draw an Apple from Green. What is in Blue?",o:["Apples","Oranges","Both","Empty"],a:2},
+ {q:"A snail climbs 3m each day and slips 2m each night on a 10m wall. Days to reach the top?",o:["7","8","9","10"],a:1},
+ {q:"If 6 cats kill 6 rats in 6 minutes, how many cats kill 100 rats in 100 minutes?",o:["100","6","60","10"],a:1},
+ {q:"You overtake the person in 2nd place. What position are you in now?",o:["1st","2nd","3rd","Cannot say"],a:1},
+ {q:"What comes next: 2, 3, 5, 7, 11, 13, ___?",o:["14","15","16","17"],a:3},
+ {q:"A is B's mother. B is C's father. What is A to C?",o:["Mother","Grandmother","Aunt","Sister"],a:1},
+ {q:"Everyone in a group shakes hands once, producing 10 handshakes. How many people?",o:["4","5","6","10"],a:1},
+ {q:"Which is heavier: 1 kg of iron or 1 kg of feathers?",o:["Iron","Feathers","Same","Depends on gravity"],a:2},
+ {q:"A man walks 1 km north, 1 km east, 1 km south and arrives back at his start. Where did he begin?",o:["North Pole","South Pole","Equator","Any point"],a:0},
+ {q:"What comes next: 0, 1, 1, 2, 3, 5, 8, 13, ___?",o:["18","20","21","22"],a:2},
+ {q:"In 60% of cases A causes B. B is observed. The probability A caused it is:",o:["100%","60%","40%","Undetermined without the base rate"],a:3},
+ {q:"A has twice what B has. B has half of what C has. C has 100. What does A have?",o:["50","100","200","25"],a:1},
+ {q:"What is the missing number: 2, 6, 24, 120, ___?",o:["240","360","600","720"],a:3},
+ {q:"If today is Wednesday, what day falls 100 days from now?",o:["Friday","Saturday","Sunday","Monday"],a:0},
+ {q:"Three switches control three bulbs in a sealed room. You may enter ONCE. How do you map them?",o:["Flip all on, then check","Flip one on, one off — use the warm bulb as the third","It cannot be done","Use a stopwatch"],a:1},
+ {q:"Socrates is a man. All men are mortal. Therefore Socrates is:",o:["A god","Mortal","Immortal","Undetermined"],a:1},
+ {q:"A rope burns unevenly but takes exactly 60 minutes end-to-end. How do you measure 45 minutes with two ropes?",o:["Light one rope at one end","Light both ends of rope 1 and one end of rope 2","Cut rope 1 in half","Light both ropes at both ends"],a:1},
+ {q:"There are 25 horses and a 5-lane track, no timer. Minimum races to find the top 3?",o:["6","7","8","10"],a:1}
+];
+
+/* ── WORDS ── */
+const WORDS = [
+ {w:"ENTROPY", s:"YOPRNET",  h:"Measure of disorder in a system",           c:"Physics"},
+ {w:"PARADOX", s:"XAROPDA",  h:"A self-contradicting truth",               c:"Logic"},
+ {w:"CATALYST",s:"YSTLAACT", h:"Speeds a reaction without being consumed", c:"Chemistry"},
+ {w:"FRACTAL", s:"LATRCAF",  h:"Infinitely self-similar pattern",          c:"Mathematics"},
+ {w:"OSMOSIS", s:"SISSOMO",  h:"Solvent crossing a semipermeable membrane",c:"Biology"},
+ {w:"THEOREM", s:"MREHOET",  h:"A proven mathematical proposition",        c:"Mathematics"},
+ {w:"SYNTAX",  s:"YXANTS",   h:"Rules governing sentence structure",       c:"Linguistics"},
+ {w:"PLASMA",  s:"AMLSAP",   h:"The fourth state of matter",               c:"Physics"},
+ {w:"CORTEX",  s:"XETCOR",   h:"Outer layer of the brain",                 c:"Neuroscience"},
+ {w:"ZENITH",  s:"HZENIT",   h:"Highest point of a celestial body",        c:"Astronomy"},
+ {w:"VECTOR",  s:"TCVROE",   h:"Quantity with magnitude and direction",    c:"Mathematics"},
+ {w:"NEBULA",  s:"UALENB",   h:"Interstellar cloud of gas and dust",       c:"Astronomy"},
+ {w:"PSYCHE",  s:"EHSCYP",   h:"The mind or soul",                         c:"Psychology"},
+ {w:"AXIOM",   s:"IOXMA",    h:"A self-evident foundational truth",        c:"Logic"},
+ {w:"GENOME",  s:"OEGNEM",   h:"Complete set of genetic material",         c:"Biology"},
+ {w:"VORTEX",  s:"XRTVOE",   h:"Rotating mass of fluid or air",            c:"Physics"},
+ {w:"CIPHER",  s:"REHPCI",   h:"An encoded secret message",                c:"Cryptography"},
+ {w:"PRISM",   s:"MRISP",    h:"Transparent solid that splits light",      c:"Optics"},
+ {w:"QUORUM",  s:"ROQUMU",   h:"Minimum members needed to transact business",c:"Governance"},
+ {w:"STRATUM", s:"MUATSTR",  h:"A distinct layer of rock or society",      c:"Geology"},
+ {w:"FERMENT", s:"TRMNEFE",  h:"Chemical breakdown by microorganisms",     c:"Chemistry"},
+ {w:"TECTONIC",s:"CNETTICO", h:"Relating to Earth's crustal plates",       c:"Geology"},
+ {w:"DIALECT", s:"TILECAD",  h:"Regional variation of a language",         c:"Linguistics"},
+ {w:"KINETIC", s:"IITNECK",  h:"Relating to motion and movement",          c:"Physics"},
+ {w:"LEXICON", s:"NOCIXEL",  h:"The complete vocabulary of a language",    c:"Linguistics"},
+ {w:"QUANTUM", s:"MUTNAUQ",  h:"Smallest discrete unit of energy",         c:"Physics"},
+ {w:"SYNAPSE", s:"ESPANYS",  h:"Junction between two nerve cells",         c:"Neuroscience"},
+ {w:"ALGEBRA", s:"ARBEGLA",  h:"Mathematics of symbols and rules",         c:"Mathematics"}
+];
+
+/* ── WRITING PROMPTS ── */
+const WRITE = [
+ {t:"synonym", task:"Give 5 synonyms for RESILIENCE and use two of them in a single sentence.", hint:"toughness · grit · elasticity · tenacity · fortitude", keys:["grit","tough","tenac","fortitude","hardi","durab","persever","elastic","stamina","endur"]},
+ {t:"express", task:"Describe 'the moment you almost remember something but can't' in two vivid sentences.", hint:"Capture both frustration and nearness", keys:["tip","tongue","edge","almost","reach","slip","fog","shadow","just","grasp"]},
+ {t:"synonym", task:"List 5 alternatives for AMBIGUOUS suited to a professional report.", hint:"vague · unclear · equivocal · nebulous · opaque", keys:["vague","unclear","equivoc","nebul","opaqu","obscur","indefin","cryptic","murky","imprecis"]},
+ {t:"express", task:"Explain 'cognitive dissonance' to a 10-year-old using an everyday example.", hint:"Two beliefs pulling in opposite directions", keys:["believ","think","two","conflict","uncomfort","contradic","opposite","clash","tension","brain"]},
+ {t:"synonym", task:"Find 5 words meaning EPHEMERAL, then compose a 3-line poem using two of them.", hint:"fleeting · transient · momentary · evanescent · impermanent", keys:["fleet","transien","moment","evanesc","imperman","brief","passing","short","temporar","vanish"]},
+ {t:"express", task:"In three sentences, capture the difference between being 'busy' and being 'productive'.", hint:"One is motion; the other is direction", keys:["motion","direction","output","result","outcome","effort","impact","matter","progress","move"]},
+ {t:"synonym", task:"Give 5 synonyms for METICULOUS and use three to describe your ideal colleague.", hint:"precise · thorough · diligent · scrupulous · exacting", keys:["precis","thorough","dilig","scrupul","exact","careful","fastidi","rigor","painstak","attentive"]},
+ {t:"express", task:"Describe 'analysis paralysis' using an analogy drawn from food or cooking.", hint:"Too many recipes, nothing gets cooked", keys:["recipe","menu","cook","choose","ingredient","kitchen","dish","decide","option","hungry"]},
+ {t:"synonym", task:"List 5 alternatives to INNOVATIVE for a startup pitch deck.", hint:"pioneering · groundbreaking · disruptive · avant-garde · trailblazing", keys:["pioneer","groundbreak","disrupt","avant","trailblaz","novel","invent","original","cutting","revolution"]},
+ {t:"express", task:"In 2–3 sentences, explain why 'the map is not the territory' matters in everyday decisions.", hint:"Mental models are always approximations", keys:["model","reality","approxim","assum","represent","actual","differ","mistake","belief","world"]},
+ {t:"synonym", task:"Give 5 synonyms for ELOQUENT and write one sentence using all five.", hint:"articulate · fluent · expressive · silver-tongued · lucid", keys:["articul","fluen","express","silver","lucid","persuas","well-spok","command","vivid","compell"]},
+ {t:"express", task:"Describe 'flow state' to someone who has never experienced deep concentration.", hint:"Time disappears; only the work remains", keys:["time","disappear","absorb","focus","lose","immers","effortless","zone","forget","present"]}
+];
+
+/* ── SITUATIONS ── */
+const SITS = [
+ { s:"A company policy states: 'Employees must give 30-day notice before resignation.' An employee submits notice on 31 March. Management claims they must serve until 30 April PLUS the 30 days of March already worked.",
+   q:["What is the ambiguity in '30-day notice'?","Is management's interpretation defensible?","How would you rewrite the policy to remove ambiguity?"],
+   keys:["calendar","working","business","day","ambig","start","count","from","clear","specif","define","30"] },
+ { s:"A food label claims '0g Trans Fat per serving.' A serving is defined as 2g — far less than anyone actually consumes. The product contains 0.4g trans fat per realistic portion.",
+   q:["What misleading practice is being used?","How does serving size create a legal loophole?","Propose a regulation that would prevent this."],
+   keys:["serving","size","mislead","round","threshold","label","per","100g","realist","portion","disclos","regulat"] },
+ { s:"A startup's Terms of Service state they may share data with 'trusted partners.' There is no definition of 'trusted' and the partner list is never disclosed.",
+   q:["What specific loophole does this create for users?","From a privacy-law perspective, what is missing?","Rewrite this clause to genuinely protect users."],
+   keys:["undefin","trust","disclos","consent","list","partner","privacy","gdpr","opt","specif","name","limit"] },
+ { s:"An exam policy states: 'Students with 75% attendance may sit the final exam.' A student attended 74.6% — which rounds up to 75% but truncates to 74%.",
+   q:["Should the student be allowed to sit the exam?","What ambiguity exists in the rule?","How would you resolve this as the institution head?"],
+   keys:["round","truncat","precis","decimal","ambig","fair","interpret","policy","clarif","threshold","exact","state"] },
+ { s:"An AI system is programmed to 'maximise user engagement.' Within weeks it begins promoting outrage-inducing content because it generates more clicks.",
+   q:["What is the unintended consequence of this objective?","Why is 'maximise engagement' a flawed goal?","Propose a better objective for a responsible AI system."],
+   keys:["proxy","goal","outrage","harm","wellbeing","align","metric","optimis","unintend","measure","value","satisfact"] },
+ { s:"A traffic regulation says 'No vehicles between 9 AM and 6 PM.' A cyclist rides through at 2 PM and is fined. The cyclist argues bicycles are not 'vehicles.'",
+   q:["What legal ambiguity exists in the word 'vehicles'?","How might the cyclist argue their case?","How should the regulation be reworded?"],
+   keys:["defin","vehicle","motor","bicycle","includ","exclud","statut","interpret","specif","list","clear","categor"] },
+ { s:"A remote-work contract states employees may work 'anywhere in India.' An employee relocates abroad temporarily and continues working without informing HR.",
+   q:["Has the employee violated the contract?","What loophole does 'anywhere in India' create?","What additional clause would the employer need?"],
+   keys:["silent","perm","tax","jurisdic","notify","approv","reside","locat","territor","clause","abroad","data"] },
+ { s:"A landlord's lease states 'the tenant is responsible for all damages.' A water pipe concealed inside a wall bursts and floods the apartment.",
+   q:["Should the tenant pay for the pipe damage?","What makes 'all damages' legally problematic?","Distinguish tenant liability from landlord liability here."],
+   keys:["structur","hidden","conceal","wear","tear","negligen","caus","control","maintain","reason","fault","unfair"] }
+];
+
+/* ── GEOGRAPHY ── */
+const GEO = [
+ {q:"Which country spans the most time zones?",o:["Russia","United States","France","China"],a:2},
+ {q:"The Atacama Desert lies primarily in which country?",o:["Argentina","Peru","Chile","Bolivia"],a:2},
+ {q:"Which river flows through the most countries?",o:["Amazon","Nile","Danube","Congo"],a:2},
+ {q:"What is the capital of Kazakhstan?",o:["Almaty","Astana","Bishkek","Tashkent"],a:1},
+ {q:"The Strait of Malacca separates which two landmasses?",o:["India & Sri Lanka","Sumatra & the Malay Peninsula","Java & Borneo","Philippines & Taiwan"],a:1},
+ {q:"Which country has the longest coastline in the world?",o:["Russia","United States","Norway","Canada"],a:3},
+ {q:"The Pantanal — the world's largest tropical wetland — lies mainly in:",o:["Brazil","Colombia","Venezuela","Peru"],a:0},
+ {q:"Lake Baikal holds roughly what share of the world's unfrozen fresh surface water?",o:["10%","20%","30%","40%"],a:1},
+ {q:"Which country is entirely surrounded by South Africa?",o:["Zimbabwe","Botswana","Lesotho","Eswatini"],a:2},
+ {q:"The Bosphorus Strait connects the Black Sea to which sea?",o:["Mediterranean","Aegean","Sea of Marmara","Adriatic"],a:2},
+ {q:"Which African country has more pyramids than Egypt?",o:["Libya","Sudan","Ethiopia","Morocco"],a:1},
+ {q:"The Lena River empties into which ocean?",o:["Pacific","Atlantic","Arctic","Indian"],a:2},
+ {q:"Which region has the highest average elevation on Earth?",o:["Nepal","Tibetan Plateau","Bhutan","Bolivian Altiplano"],a:1},
+ {q:"The Gobi Desert spans China and which other nation?",o:["Kazakhstan","Mongolia","Russia","Kyrgyzstan"],a:1},
+ {q:"Which South American country borders BOTH the Atlantic and Pacific Oceans?",o:["Colombia","Brazil","Chile","Venezuela"],a:0},
+ {q:"Timbuktu is a historic city in which country?",o:["Niger","Mali","Senegal","Chad"],a:1},
+ {q:"The Ring of Fire encircles which ocean?",o:["Atlantic","Indian","Arctic","Pacific"],a:3},
+ {q:"Which sea has no land borders at all?",o:["Dead Sea","Coral Sea","Sargasso Sea","Caspian Sea"],a:2},
+ {q:"The Mariana Trench lies in which ocean?",o:["Atlantic","Indian","Pacific","Arctic"],a:2},
+ {q:"Which country holds the most UNESCO World Heritage Sites?",o:["China","Italy","France","Spain"],a:1},
+ {q:"Which is the only continent with land in all four hemispheres?",o:["Asia","Africa","Europe","South America"],a:1},
+ {q:"Which country is simultaneously the largest island and the smallest continent?",o:["Greenland","New Zealand","Indonesia","Australia"],a:3},
+ {q:"India's longest river by length within the country is:",o:["Brahmaputra","Godavari","Ganga","Narmada"],a:2},
+ {q:"Which Indian state has the longest coastline?",o:["Tamil Nadu","Andhra Pradesh","Gujarat","Maharashtra"],a:2},
+ {q:"The Deccan Plateau is bounded on the west by which mountain range?",o:["Eastern Ghats","Western Ghats","Aravallis","Vindhyas"],a:1}
+];
+
+/* ── GENERAL KNOWLEDGE ── */
+const GK = [
+ {q:"Who invented the World Wide Web?",o:["Bill Gates","Tim Berners-Lee","Vint Cerf","Steve Jobs"],a:1},
+ {q:"The speed of light is approximately how many km per second?",o:["100,000","200,000","300,000","400,000"],a:2},
+ {q:"Which element has atomic number 79?",o:["Silver","Platinum","Gold","Mercury"],a:2},
+ {q:"The Turing Test assesses machine:",o:["Speed","Intelligence","Memory","Energy efficiency"],a:1},
+ {q:"India launched Chandrayaan-1 in which year?",o:["2006","2007","2008","2010"],a:2},
+ {q:"'Cogito, ergo sum' was written by which philosopher?",o:["Kant","Descartes","Plato","Nietzsche"],a:1},
+ {q:"The 'Black Swan' theory was developed by:",o:["Malcolm Gladwell","Nassim Taleb","Daniel Kahneman","Richard Feynman"],a:1},
+ {q:"The most abundant gas in Earth's atmosphere is:",o:["Oxygen","Carbon dioxide","Argon","Nitrogen"],a:3},
+ {q:"Which country first granted legal personhood to a river?",o:["India","Ecuador","New Zealand","Bolivia"],a:2},
+ {q:"The Dunning–Kruger effect describes a bias about:",o:["Memory accuracy","Time perception","Overestimating one's competence","Social conformity"],a:2},
+ {q:"The half-life of Carbon-14 is approximately:",o:["1,000 years","5,730 years","10,000 years","50,000 years"],a:1},
+ {q:"Which Indian mathematician formalised zero as a number with arithmetic rules?",o:["Aryabhata","Brahmagupta","Ramanujan","Bhaskara II"],a:1},
+ {q:"Moore's Law states transistor count doubles roughly every how many years?",o:["1","2","3","5"],a:1},
+ {q:"The Mpemba effect describes hot water:",o:["Evaporating slower","Freezing faster than cold water","Boiling at a lower temperature","Conducting electricity better"],a:1},
+ {q:"How many bones are in the adult human body?",o:["186","196","206","216"],a:2},
+ {q:"Which vitamin does the body synthesise from sunlight?",o:["Vitamin A","Vitamin B12","Vitamin C","Vitamin D"],a:3},
+ {q:"The Large Hadron Collider is operated from which country?",o:["United States","Germany","Switzerland","France"],a:2},
+ {q:"The Fibonacci sequence appears in the spiral of which natural object?",o:["Snowflake","Nautilus shell","Quartz crystal","Glass prism"],a:1},
+ {q:"Which company created the Kotlin programming language?",o:["Google","Microsoft","JetBrains","Oracle"],a:2},
+ {q:"The Baader–Meinhof phenomenon is better known as:",o:["A logical fallacy","Frequency illusion","Loss aversion","Anchoring bias"],a:1},
+ {q:"RAM stands for:",o:["Read Access Memory","Random Access Memory","Rapid Array Module","Recurrent Access Memory"],a:1},
+ {q:"The scientific study of earthquakes is called:",o:["Seismology","Geology","Tectonics","Volcanology"],a:0},
+ {q:"Which blood type is the universal donor?",o:["A positive","O negative","AB positive","B negative"],a:1},
+ {q:"Who is regarded as the architect of the Indian Constitution?",o:["Jawaharlal Nehru","B. R. Ambedkar","Sardar Patel","Rajendra Prasad"],a:1},
+ {q:"The Reserve Bank of India was established in which year?",o:["1935","1947","1950","1969"],a:0}
+];
+
+/* ── READING LIBRARY ── */
+const BOOKS = [
+ { id:"b1", title:"The Courage to Be Disliked", author:"Ichiro Kishimi & Fumitake Koga",
+   genre:"Psychology", tint:"#F06AFF",
+   chapters:[
+    { title:"Chapter 1 — Deny Trauma",
+      text:"Adlerian psychology boldly denies aetiology — the assumed cause-and-effect chain between past trauma and present misfortune. Trauma, in this view, does not determine us. We are not driven by our histories; we are pulled by our goals. A person who refuses to leave the house has not been disabled by anxiety — rather, they generate anxiety in order to justify not leaving. This reversal is uncomfortable because it removes the comfort of blame, but it also returns something enormous: agency. If the past does not decide anything, then the future is not yet written." },
+    { title:"Chapter 2 — All Problems Are Interpersonal",
+      text:"Plato argued that human beings are incomplete in themselves and forever seek their other half. Adler goes further and stranger: the feeling of inferiority, he says, is not an illness at all but a healthy and universal condition. It is the engine of striving. The pathology begins only when inferiority hardens into an inferiority complex — when a person uses their perceived lack as a permanent excuse rather than a temporary starting point. The difference between the two is not the feeling, but what one does with it." },
+    { title:"Chapter 3 — Separate the Tasks",
+      text:"Adlerian psychology reduces most interpersonal difficulty to one deceptively simple question: whose task is this? If the consequences of a decision fall ultimately on another person, the decision is their task, not yours. Your task is your own conduct. Letting others own their tasks sounds cold at first, even negligent. In practice it is the opposite: it is the most respectful stance available, because it refuses to treat another adult as a project to be managed." }
+   ] },
+ { id:"b2", title:"The Art of Thinking Clearly", author:"Rolf Dobelli",
+   genre:"Cognitive Science", tint:"#38C6F4",
+   chapters:[
+    { title:"Chapter 1 — Survivorship Bias",
+      text:"We overestimate our chance of success because failure is invisible. We see the celebrated startups, the bestselling novels, the legendary investors. We do not see the ten thousand ventures that folded, the manuscripts never published, the speculators quietly bankrupted. The survivors are loud and the casualties are silent, so we build our expectations from a sample that has been ruthlessly filtered. Whenever you see a distribution of winners, ask what happened to everyone who is missing from the picture." },
+    { title:"Chapter 2 — The Swimmer's Body Illusion",
+      text:"Professional swimmers do not have exceptional physiques because they train relentlessly. They are professional swimmers, in large part, because of the physiques they already had. The body is a selection criterion, not a product. Advertising exploits this confusion constantly: it sells you the outcome while quietly hiding the fact that the outcome was the entry requirement. Before adopting anyone's method, check whether you are looking at a cause or at a filter." },
+    { title:"Chapter 3 — Confirmation Bias",
+      text:"We instinctively favour information that confirms what we already believe. Convinced a stock will rise, you find yourself reading only the bullish analyses; contrary data is ignored, reinterpreted, or forgotten entirely. This is not stupidity — it is efficient, and it feels like thinking. It is also the most dangerous of all cognitive errors, because it operates invisibly and grows stronger the more confident you become. The antidote is deliberate: actively hunt for the evidence that would prove you wrong." }
+   ] }
+];
+
+const RQUIZ = {
+ "b1_0":[
+  {q:"What does Adlerian psychology deny, according to the chapter?",o:["Free will","Aetiology — the cause-effect chain from trauma","The unconscious mind","Social conditioning"],a:1},
+  {q:"In the example given, why does a person refuse to leave the house?",o:["Anxiety disabled them","They generate anxiety to justify not leaving","They lack social skills","Past trauma paralysed them"],a:1}
+ ],
+ "b1_1":[
+  {q:"How does Adler characterise the feeling of inferiority?",o:["As an illness","As a healthy, universal condition","As a rare pathology","As a social construct"],a:1},
+  {q:"When does inferiority become a complex?",o:["When it is felt intensely","When it becomes a permanent excuse","When others notice it","When it appears in childhood"],a:1}
+ ],
+ "b1_2":[
+  {q:"What single question reduces most interpersonal difficulty?",o:["Who is right?","Whose task is this?","What is fair?","Who started it?"],a:1},
+  {q:"How does the chapter characterise task separation?",o:["Cold and negligent","The most respectful stance available","A last resort","A temporary tactic"],a:1}
+ ],
+ "b2_0":[
+  {q:"Why do we overestimate our chance of success?",o:["We are naturally optimistic","Failure is invisible in the sample we observe","Media exaggerates outcomes","We misjudge probability"],a:1},
+  {q:"What does the chapter advise when you see a distribution of winners?",o:["Copy their methods","Ask what happened to everyone missing","Invest immediately","Discount the outliers"],a:1}
+ ],
+ "b2_1":[
+  {q:"According to the illusion, a swimmer's physique is:",o:["A result of training","A selection criterion, not a product","Genetically irrelevant","Built by diet"],a:1},
+  {q:"What should you check before adopting someone's method?",o:["Their credentials","Whether it is a cause or a filter","How long they trained","Their success rate"],a:1}
+ ],
+ "b2_2":[
+  {q:"Why is confirmation bias described as especially dangerous?",o:["It is rare and hard to detect","It operates invisibly and strengthens with confidence","It only affects experts","It causes memory loss"],a:1},
+  {q:"What antidote does the chapter propose?",o:["Consult more experts","Actively hunt for disconfirming evidence","Delay all decisions","Trust intuition"],a:1}
+ ]
+};
+
+/* ── STRESS PUZZLES ── */
+const SEQS = [
+ {s:[3,6,11,18,27],   n:38,  r:"Gaps grow: +3, +5, +7, +9, +11"},
+ {s:[1,2,6,24,120],   n:720, r:"Factorials: 1!, 2!, 3!, 4!, 5!, 6!"},
+ {s:[2,3,5,7,11,13],  n:17,  r:"Consecutive prime numbers"},
+ {s:[1,1,2,3,5,8,13], n:21,  r:"Fibonacci — each term is the sum of the previous two"},
+ {s:[100,92,85,79,74],n:70,  r:"Shrinking gaps: −8, −7, −6, −5, −4"},
+ {s:[2,5,11,23,47],   n:95,  r:"Each term is ×2 + 1"},
+ {s:[1,8,27,64,125],  n:216, r:"Perfect cubes: 1³, 2³, 3³, 4³, 5³, 6³"},
+ {s:[4,9,16,25,36],   n:49,  r:"Perfect squares from 2² onward"}
+];
+const RIDDLES = [
+ {q:"I have cities but no houses, mountains but no trees, water but no fish, roads but no cars. What am I?", o:["A dream","A map","A painting","A mirror"], a:1},
+ {q:"The more you take, the more you leave behind. What am I?", o:["Time","Footsteps","Memories","Secrets"], a:1},
+ {q:"I speak without a mouth and hear without ears. I have no body, yet I come alive with wind. What am I?", o:["A ghost","A shadow","An echo","A thought"], a:2},
+ {q:"What runs but never walks, has a mouth but never speaks, a bed but never sleeps?", o:["A clock","A river","A dream","The wind"], a:1},
+ {q:"You see a house with four walls, each facing south. A bear walks past. What colour is the bear?", o:["Brown","Black","White","Grey"], a:2},
+ {q:"What gets wetter the more it dries?", o:["Sponge","Towel","Cloud","Soap"], a:1}
+];
+const LATERALS = [
+ {q:"A man walks into a restaurant, orders albatross soup, takes one sip, goes home and ends his life. Why?", hint:"He had eaten 'albatross' once before — at sea, after a shipwreck.", a:"The taste told him that what he ate while stranded was not albatross. His companions had fed him human flesh, most likely from someone he loved, and had lied about it."},
+ {q:"A woman shoots her husband, then holds him under water for five minutes — and afterwards they go out to dinner together. How?", hint:"Consider her profession.", a:"She is a photographer. She shot his portrait, developed the film in a chemical bath, and then they went to dinner."},
+ {q:"A man is found dead in a sealed room with only a small puddle of water beside him. There is no weapon. How did he die?", hint:"The weapon disappeared on its own.", a:"He was killed with a sharpened icicle, which then melted, leaving no trace but water."},
+ {q:"Two men enter a bar and order identical iced drinks. One drinks quickly and lives; the other sips slowly and dies. Why?", hint:"Think about what was in the ice.", a:"The poison was frozen inside the ice cubes. The fast drinker finished before the ice melted; the slow sipper did not."}
+];
+const CRYPTOS = [
+ {eq:"SEND + MORE = MONEY", hint:"M must be 1 (a carry). That forces S = 9 and O = 0."},
+ {eq:"TWO + TWO = FOUR",    hint:"Start with T. The leading letter of a 4-digit sum from two 3-digit numbers must be 1."},
+ {eq:"BASE + BALL = GAMES", hint:"Each letter maps to one unique digit 0–9. Work from the rightmost column."}
+];
+
+/* ═══════════════════════════════════════════════════
+   MODULE REGISTRY
+═══════════════════════════════════════════════════ */
+const MODULES = [
+ {id:"math",    icon:"⚡", name:"Math Sprint",     color:P.math,    desc:"Arithmetic speed & streak multipliers"},
+ {id:"logic",   icon:"🧩", name:"Logic Grid",      color:P.logic,   desc:"Deduction, syllogisms, sequences"},
+ {id:"memory",  icon:"🧠", name:"Neural Memory",   color:P.memory,  desc:"Pattern recall under pressure"},
+ {id:"word",    icon:"🔤", name:"Word Forge",      color:P.word,    desc:"Unscramble & vocabulary mastery"},
+ {id:"writing", icon:"✍️", name:"Mind Writer",     color:P.writing, desc:"Scored expression & synonyms"},
+ {id:"sit",     icon:"🔍", name:"Situation Intel", color:P.sit,     desc:"Find loopholes, craft solutions"},
+ {id:"geo",     icon:"🌍", name:"GeoMind",         color:P.geo,     desc:"World geography & map trivia"},
+ {id:"gk",      icon:"📡", name:"Knowledge Pulse", color:P.gk,      desc:"GK, science & trivia — always fresh"},
+ {id:"stress",  icon:"🧨", name:"Brain Crusher",   color:P.stress,  desc:"The hardest puzzle — dare to finish"},
+ {id:"focus",   icon:"🎯", name:"Focus Lock",      color:P.focus,   desc:"Attention & concentration training"},
+ {id:"reading", icon:"📚", name:"Reading Lab",     color:P.reading, desc:"Read, absorb, then get quizzed"}
+];
+const MOD = id => MODULES.find(m=>m.id===id);
+const LETTERS = ["A","B","C","D"];
+
+/* ═══════════════════════════════════════════════════
+   APP STATE
+═══════════════════════════════════════════════════ */
+const S = {
+  user:null, screen:"auth", mode:null, tab:"train",
+  authTab:"login", authErr:"", onboard:-1,
+  g:{},            // active game state
+  last:null,       // last result
+  modal:null
+};
+
+function saveUser(u){ S.user = u; LS.set("praj_"+u.email, u); }
+
+/* ═══════════════════════════════════════════════════
+   BACKDROP
+═══════════════════════════════════════════════════ */
+(function buildBg(){
+  const b = el('bg');
+  b.innerHTML =
+    '<div class="grad g1"></div><div class="grad g2"></div><div class="grad g3"></div><div class="grad scan"></div>';
+  const orbs = [[18,12,110,"#7B5EFF",38],[80,70,80,"#2EC9B0",28],[45,84,90,"#FF9F2E",42],
+                [72,22,60,"#FF5F8F",32],[28,56,70,"#38C6F4",35],[90,40,55,"#C77DFF",30]];
+  orbs.forEach(function(o,i){
+    const d = document.createElement('div');
+    d.className='orb';
+    d.style.cssText = 'left:'+o[0]+'%;top:'+o[1]+'%;width:'+o[2]+'px;height:'+o[2]+
+      'px;background:radial-gradient(circle,'+o[3]+'20 0%,transparent 70%);--dur:'+o[4]+'s;animation-delay:'+(i*4.2)+'s';
+    b.appendChild(d);
+  });
+  [[220,60,'rgba(255,160,46,.06)'],[168,40,'rgba(123,94,255,.09)'],[280,90,'rgba(46,201,176,.045)']]
+  .forEach(function(r,i){
+    const d = document.createElement('div');
+    d.className='ring';
+    d.style.cssText='right:'+(-r[0]/3)+'px;top:'+(14+i*3)+'%;width:'+r[0]+'px;height:'+r[0]+
+      'px;border:1px solid '+r[2]+';--rd:'+r[1]+'s'+(i%2?';animation-direction:reverse':'');
+    b.appendChild(d);
+  });
+})();
+
+/* ═══════════════════════════════════════════════════
+   HTML COMPONENT HELPERS
+═══════════════════════════════════════════════════ */
+function card(inner, opt){
+  opt = opt || {};
+  const glow = opt.glow ? ' glow' : '';
+  const gc   = opt.glow ? '--gc:'+opt.glow+'22;border-color:'+opt.glow+'44;' : '';
+  return '<div class="card'+glow+(opt.cls?' '+opt.cls:'')+'" style="'+gc+(opt.style||'')+'">'+inner+'</div>';
+}
+function btn(label, act, opt){
+  opt = opt || {};
+  const c = opt.color || P.indigo;
+  const bg = opt.ghost ? 'background:transparent;color:'+c+';border-color:'+c+'88;'
+                       : 'background:linear-gradient(135deg,'+c+','+c+'cc);border-color:'+c+'22;color:#fff;';
+  return '<button class="btn lift'+(opt.full?' full':'')+(opt.sm?' sm':'')+'" data-act="'+act+'"'+
+         (opt.data?' '+opt.data:'')+(opt.disabled?' disabled':'')+
+         ' style="'+bg+(opt.style||'')+'">'+label+'</button>';
+}
+function ansBtn(text, act, opt){
+  opt = opt || {};
+  const st = opt.state ? ' '+opt.state : '';
+  const lock = opt.locked ? ' locked' : '';
+  const lbl = opt.label ? '<span class="lbl" style="color:'+(opt.accent||P.muted)+'">'+opt.label+'</span>' : '';
+  return '<button class="ans'+st+lock+'" data-act="'+act+'"'+(opt.data?' '+opt.data:'')+'>'+lbl+
+         '<span>'+text+'</span></button>';
+}
+function bar(val,max,color,h){
+  const pct = Math.max(0,Math.min(100,(val/(max||1))*100));
+  return '<div class="bar" style="height:'+(h||5)+'px"><i style="width:'+pct+'%;background:'+color+'"></i></div>';
+}
+function ring(t,total,size){
+  size = size||62;
+  const r=(size/2)-5, c=2*Math.PI*r, pct=Math.max(0,t/(total||1));
+  const col = pct>.55?P.teal : pct>.28?P.gold : P.rose;
+  return '<div style="position:relative;width:'+size+'px;height:'+size+'px;flex:0 0 auto">'+
+    '<svg width="'+size+'" height="'+size+'" style="transform:rotate(-90deg)">'+
+    '<circle cx="'+(size/2)+'" cy="'+(size/2)+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="4"/>'+
+    '<circle cx="'+(size/2)+'" cy="'+(size/2)+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="4" stroke-linecap="round" '+
+    'stroke-dasharray="'+(c*pct)+' '+c+'" style="transition:stroke-dasharray 1s linear,stroke .4s"/></svg>'+
+    '<div class="mono" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;'+
+    'font-size:'+Math.floor(size*.25)+'px;font-weight:700;color:'+col+'">'+t+'</div></div>';
+}
+function currency(u,compact){
+  const items=[["💎",u.diamonds,P.sky],["🥇",u.gold,P.gold],["⚡",u.points,P.violet]];
+  return '<div class="cur">'+items.map(function(i){
+    return '<span style="border:1px solid '+i[2]+'33;color:'+i[2]+
+      (compact?';padding:4px 9px;font-size:11px':'')+'"><span style="font-size:'+(compact?12:14)+'px">'+i[0]+'</span>'+
+      i[1].toLocaleString()+'</span>';
+  }).join('')+'</div>';
+}
+function statBox(label,val,color){
+  return card('<div class="mono" style="font-size:9px;color:'+P.muted+'">'+label+'</div>'+
+    '<div class="mono" style="font-size:19px;font-weight:700;color:'+color+'">'+val+'</div>',
+    {style:'padding:13px 10px;text-align:center'});
+}
+function head2(left,right){
+  return '<div class="row between">'+left+right+'</div>';
+}
+function counterHead(label,cur,total,color,score){
+  return '<div class="row between">'+
+    '<div><div class="mono" style="font-size:9px;color:'+P.muted+';letter-spacing:3px">'+label+'</div>'+
+    '<div class="mono" style="font-size:20px;font-weight:700;color:'+color+'">'+cur+
+    (total?'<span style="color:'+P.muted+';font-size:12px">/'+total+'</span>':'')+'</div></div>'+
+    '<div class="tr"><div class="mono" style="font-size:9px;color:'+P.muted+'">SCORE</div>'+
+    '<div class="mono" style="font-size:20px;font-weight:700;color:'+P.gold+'">'+score+'</div></div></div>';
+}
+function scorePop(v){
+  const d=document.createElement('div');
+  d.className='pop'; d.textContent='+'+v;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),980);
+}
+function streakChip(n){
+  if(n<2) return '';
+  return '<div class="tag" style="background:rgba(255,160,46,.1);border:1px solid rgba(255,160,46,.35);'+
+    'color:'+P.saffron+';animation:streakBurn 2s ease-in-out infinite;align-self:flex-start">🔥 '+n+'× STREAK</div>';
+}
+function feedback(ok, answerTxt){
+  return card('<div style="font-size:13px;color:'+(ok?P.ok:P.bad)+'">'+
+    (ok ? '✓ Correct!' : '✗ Answer: '+answerTxt)+'</div>',
+    {style:'padding:11px 15px;border-color:'+(ok?P.ok:P.bad)+'44'});
+}
+
+/* ═══════════════════════════════════════════════════
+   HEURISTIC WRITING SCORER (offline demo grader)
+   Real build calls the Claude API — see launch guide.
+═══════════════════════════════════════════════════ */
+function scoreText(text, keys, minWords){
+  const t = (text||"").trim();
+  const words = t.split(/\s+/).filter(Boolean);
+  const n = words.length;
+  const need = minWords || 12;
+  if(n < 4) return null;
+
+  // 1. Length (0-30)
+  const lenScore = Math.min(30, Math.round((n/Math.max(need,1))*22));
+  // 2. Vocabulary diversity (0-25)
+  const lower = words.map(w=>w.toLowerCase().replace(/[^a-z]/g,'')).filter(Boolean);
+  const uniq = new Set(lower).size;
+  const divScore = Math.min(25, Math.round((uniq/Math.max(lower.length,1))*30));
+  // 3. Keyword relevance (0-25)
+  const low = t.toLowerCase();
+  let hits = 0;
+  (keys||[]).forEach(k=>{ if(low.indexOf(k)>=0) hits++; });
+  const keyScore = Math.min(25, hits*6);
+  // 4. Structure — sentences & word length (0-20)
+  const sentences = t.split(/[.!?;]+/).filter(s=>s.trim().length>3).length;
+  const avgLen = lower.reduce((a,w)=>a+w.length,0)/Math.max(lower.length,1);
+  const structScore = Math.min(20, sentences*4 + (avgLen>5?6:avgLen>4?3:0));
+
+  let total = lenScore + divScore + keyScore + structScore;
+  total = Math.max(12, Math.min(98, total));
+
+  const grade = total>=88?"S" : total>=74?"A" : total>=58?"B" : total>=40?"C" : "D";
+  const notes = [];
+  if(n < need)        notes.push("Try expanding — depth earns more than brevity here.");
+  else                notes.push("Good length and development.");
+  if(hits >= 3)       notes.push("Strong topical relevance — you hit the core ideas.");
+  else if(hits >= 1)  notes.push("Partially on-target; push further into the specific concept.");
+  else                notes.push("Aim closer to the exact concept the prompt asks about.");
+  if(uniq/Math.max(lower.length,1) > .72) notes.push("Excellent vocabulary variety.");
+  else                notes.push("Vary your word choice to lift the score.");
+
+  return {
+    score: total, grade: grade,
+    feedback: notes.join(" "),
+    strengths: hits>=2 ? "On-topic and specific" : "Clear attempt",
+    improve:  n<need ? "Add one more developed sentence" : "Sharpen precision of word choice"
+  };
+}
+const GRADE_C = { S:P.gold, A:P.ok, B:P.logic, C:P.saffron, D:P.bad };
+
+/* ═══════════════════════════════════════════════════
+   AUTH SCREEN
+═══════════════════════════════════════════════════ */
+const ONBOARD = [
+ {icon:"⚡", t:"Earn Points Every Session",
+  b:"Answer correctly and earn Points. 100 Points become 1 Gold. 100 Gold become 1 Diamond. Your currency is your brain's proof-of-work."},
+ {icon:"🧠", t:"10 Daily Sessions Per Module",
+  b:"Each of the 11 modules allows up to 10 sessions a day. Questions are drawn fresh every single time — no repetition, ever."},
+ {icon:"💎", t:"Your Brain Profile Card",
+  b:"Your IQ estimate, rank, Gold and Diamonds form a shareable Brain Profile Card — for LinkedIn, job applications, or simply proving your edge."}
+];
+
+function viewAuth(){
+  if(S.onboard >= 0){
+    const o = ONBOARD[S.onboard];
+    return '<div style="min-height:78vh;display:flex;align-items:center;justify-content:center">'+
+      '<div style="width:100%;max-width:400px" class="anim-in">'+
+      card(
+        '<div style="font-size:62px;margin-bottom:16px;animation:heartbeat 2s infinite">'+o.icon+'</div>'+
+        '<div class="cin" style="font-size:19px;font-weight:700;color:#fff;margin-bottom:12px">'+o.t+'</div>'+
+        '<div style="font-size:14px;line-height:1.8;color:'+P.text+';margin-bottom:26px">'+o.b+'</div>'+
+        bar(S.onboard+1,3,P.indigo,4)+
+        '<div style="margin-top:22px">'+
+          (S.onboard<2 ? btn("Next →","ob-next",{color:P.indigo,full:true})
+                       : btn("Start Training 🚀","ob-done",{color:P.saffron,full:true}))+
+        '</div>',
+        {glow:P.indigo, style:'padding:36px 28px;text-align:center'})+
+      '<div class="row center g8" style="margin-top:16px">'+
+        ONBOARD.map(function(_,i){
+          return '<div style="width:'+(i===S.onboard?20:8)+'px;height:8px;border-radius:99px;background:'+
+            (i===S.onboard?P.indigo:'rgba(255,255,255,.15)')+';transition:all .3s"></div>';
+        }).join('')+
+      '</div></div></div>';
+  }
+
+  const t = S.authTab;
+  return '<div style="min-height:80vh;display:flex;align-items:center;justify-content:center">'+
+    '<div style="width:100%;max-width:420px" class="anim-in">'+
+
+    '<div class="tc" style="margin-bottom:32px">'+
+      '<div style="font-size:54px;margin-bottom:8px;animation:floatY 5s ease-in-out infinite">🧠</div>'+
+      '<div class="cin" style="font-size:38px;font-weight:900;letter-spacing:2px">'+
+        '<span style="color:'+P.saffron+'">PRAJ</span><span style="color:'+P.indigo+'">NIFY</span></div>'+
+      '<div class="mono" style="font-size:10px;color:'+P.muted+';letter-spacing:4px;margin-top:6px">ANCIENT WISDOM · MODERN COGNITION</div>'+
+    '</div>'+
+
+    card(
+      '<div class="tabs" style="grid-template-columns:1fr 1fr;margin-bottom:22px">'+
+        '<button data-act="auth-tab" data-t="login"  class="'+(t==="login"?"on":"")+'">Sign In</button>'+
+        '<button data-act="auth-tab" data-t="signup" class="'+(t==="signup"?"on":"")+'">Create Account</button>'+
+      '</div>'+
+      '<div class="col g10">'+
+        (t==="signup" ? '<input id="a-name" class="inp" placeholder="Full Name" autocomplete="name">' : '')+
+        '<input id="a-mail" class="inp" type="email" placeholder="Email Address" autocomplete="email">'+
+        '<input id="a-pass" class="inp" type="password" placeholder="Password" autocomplete="current-password">'+
+        (S.authErr ? '<div style="font-size:12px;color:'+P.bad+';padding:9px 12px;background:rgba(255,95,143,.1);'+
+                     'border:1px solid rgba(255,95,143,.28);border-radius:9px">'+esc(S.authErr)+'</div>' : '')+
+        btn(t==="login"?"Sign In →":"Create Account →","auth-go",{color:P.indigo,full:true,style:'margin-top:4px'})+
+      '</div>',
+      {style:'padding:28px 24px'})+
+
+    '<div class="tc" style="margin-top:18px;font-size:11px;color:'+P.muted+';line-height:1.9">'+
+      '100 Points = 1 Gold · 100 Gold = 1 Diamond<br>'+
+      '<span style="color:'+P.teal+'">Up to 10 sessions per module, every day</span></div>'+
+
+    '<div class="tc" style="margin-top:14px">'+
+      btn("Try a demo account →","auth-demo",{ghost:true,color:P.muted,sm:true})+'</div>'+
+
+    '</div></div>';
+}
+
+/* ═══════════════════════════════════════════════════
+   BADGES + STORE DATA
+═══════════════════════════════════════════════════ */
+function badgesFor(u){
+  const iq = iqOf(u);
+  const modsPlayed = Object.keys(u.dailySessions||{}).length;
+  return [
+   {i:"🌟", n:"First Step",       d:"Complete your first session", ok:(u.totalSessions||0)>=1},
+   {i:"🔥", n:"Week Warrior",     d:"Reach a 7-day streak",        ok:(u.streak||0)>=7},
+   {i:"💎", n:"Diamond Mind",     d:"Earn your first Diamond",     ok:(u.diamonds||0)>=1},
+   {i:"🥇", n:"Gold Rush",        d:"Accumulate 10 Gold",          ok:((u.gold||0)+(u.diamonds||0)*100)>=10},
+   {i:"🧠", n:"Brain Athlete",    d:"50 total sessions",           ok:(u.totalSessions||0)>=50},
+   {i:"🏆", n:"Polymath",         d:"Play all 11 modules",         ok:modsPlayed>=11},
+   {i:"👑", n:"Consistency King", d:"Reach a 30-day streak",       ok:(u.streak||0)>=30},
+   {i:"🎓", n:"Sharp Thinker",    d:"Reach Brain IQ 120",          ok:iq>=120},
+   {i:"🦁", n:"Scholar",          d:"Reach Brain IQ 140",          ok:iq>=140},
+   {i:"🚀", n:"Mission Control",  d:"200 total sessions",          ok:(u.totalSessions||0)>=200}
+  ];
+}
+const STORE = [
+ {i:"💡", n:"Hint Pack (5)",       d:"Reveal answers without penalty",  cost:50,  cur:"gold"},
+ {i:"🛡️", n:"Streak Shield",       d:"Protect your streak for one day", cost:20,  cur:"gold"},
+ {i:"⚡", n:"XP Boost (24h)",      d:"Double XP for a full day",        cost:100, cur:"gold"},
+ {i:"🌙", n:"Cosmic Dark Theme",   d:"Premium aurora palette",          cost:1,   cur:"diamonds"},
+ {i:"🌅", n:"Sacred Saffron Theme",d:"Ancient wisdom palette",          cost:1,   cur:"diamonds"}
+];
+
+/* ═══════════════════════════════════════════════════
+   HOME DASHBOARD
+═══════════════════════════════════════════════════ */
+function viewHome(){
+  const u = S.user, iq = iqOf(u), rk = rankOf(iq);
+  const xpCap = u.level*150, xpCur = u.xp % xpCap;
+  const done = Object.values(u.dailySessions||{}).reduce((a,b)=>a+(b||0),0);
+
+  let out = '<div class="col g14 anim-up">';
+
+  /* hero */
+  out += card(
+    '<div class="row between" style="align-items:flex-start;margin-bottom:14px">'+
+      '<div><div style="font-size:12px;color:'+P.muted+'">Welcome back,</div>'+
+      '<div class="cin" style="font-size:22px;font-weight:700;color:#fff;margin-top:2px">'+esc(u.name)+'</div>'+
+      '<div class="row g6" style="margin-top:4px"><span style="font-size:14px">'+rk.icon+'</span>'+
+      '<span class="mono" style="font-size:11px;font-weight:700;color:'+rk.color+'">'+rk.label+'</span></div></div>'+
+      '<div class="tr"><div class="cin" style="font-size:9px;color:'+P.muted+';letter-spacing:3px">BRAIN IQ</div>'+
+      '<div class="cin" style="font-size:46px;font-weight:900;line-height:1;background:linear-gradient(135deg,'+
+        P.indigo+','+P.teal+');-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">'+iq+'</div>'+
+      '<div class="mono" style="font-size:10px;color:'+P.muted+';margin-top:2px">🔥 '+u.streak+'-day streak</div></div>'+
+    '</div>'+
+    '<div style="margin-bottom:12px">'+
+      '<div class="row between" style="margin-bottom:5px">'+
+        '<span class="mono" style="font-size:10px;color:'+P.muted+'">Level '+u.level+'</span>'+
+        '<span class="mono" style="font-size:10px;color:'+P.muted+'">'+(xpCap-xpCur)+' XP to next</span></div>'+
+      bar(xpCur,xpCap,'linear-gradient(90deg,'+P.indigo+','+P.teal+')')+
+    '</div>'+
+    '<div class="row between">'+
+      '<div style="font-size:12px;color:'+P.muted+'">Today: <span style="color:'+P.saffron+';font-weight:600">'+done+'/110</span> sessions</div>'+
+      btn("View Profile 📋","profile",{ghost:true,color:P.saffron,sm:true})+
+    '</div>',
+    {glow:P.indigo, style:'padding:22px'});
+
+  out += currency(u);
+
+  /* tabs */
+  out += '<div class="tabs" style="grid-template-columns:repeat(3,1fr)">'+
+    [["train","🏋️ Train"],["badges","🏅 Badges"],["store","🏪 Store"]].map(function(x){
+      return '<button data-act="tab" data-t="'+x[0]+'" class="lift '+(S.tab===x[0]?"on":"")+'">'+x[1]+'</button>';
+    }).join('')+'</div>';
+
+  /* TRAIN */
+  if(S.tab==="train"){
+    out += '<div class="mono" style="font-size:9px;color:'+P.muted+';letter-spacing:4px">DAILY TRAINING MODULES</div>';
+    out += '<div class="col g9">'+ MODULES.map(function(m,i){
+      const used = (u.dailySessions||{})[m.id]||0, full = used>=10;
+      return '<div class="mod'+(full?' full':' lift')+'" data-act="'+(full?'':'play')+'" data-id="'+m.id+'" '+
+        'style="background:'+m.color+'08;border-color:'+m.color+(full?'11':'22')+';'+
+        'border-left-color:'+m.color+(full?'44':'')+';animation:fadeUp '+(.3+i*.03).toFixed(2)+'s ease">'+
+        '<span class="ico">'+m.icon+'</span>'+
+        '<div class="body"><div class="name">'+m.name+'</div><div class="desc">'+m.desc+'</div></div>'+
+        '<div class="meter"><div class="mono" style="font-size:11px;font-weight:700;color:'+(full?P.muted:m.color)+'">'+used+'/10</div>'+
+        '<div style="height:3px;width:44px;background:rgba(255,255,255,.06);border-radius:99px;margin-top:4px;overflow:hidden">'+
+        '<div style="height:100%;width:'+(used/10*100)+'%;background:'+m.color+';border-radius:99px;transition:width .5s"></div></div></div>'+
+        '<span style="color:'+P.muted+';font-size:18px;flex:0 0 auto">'+(full?'✓':'›')+'</span></div>';
+    }).join('')+'</div>';
+    out += btn("Sign Out","logout",{ghost:true,color:P.muted,full:true,style:'margin-top:6px'});
+  }
+
+  /* BADGES */
+  if(S.tab==="badges"){
+    const bs = badgesFor(u), got = bs.filter(b=>b.ok).length;
+    out += '<div class="mono" style="font-size:9px;color:'+P.muted+';letter-spacing:4px">'+got+' / '+bs.length+' UNLOCKED</div>';
+    out += '<div class="grid2">'+ bs.map(function(b){
+      return card('<div style="font-size:30px;margin-bottom:6px;filter:'+(b.ok?'none':'grayscale(1)')+'">'+b.i+'</div>'+
+        '<div style="font-size:12px;font-weight:600;color:'+(b.ok?'#fff':P.muted)+'">'+b.n+'</div>'+
+        '<div style="font-size:10px;color:'+P.muted+';margin-top:2px">'+b.d+'</div>'+
+        (b.ok?'<div class="mono" style="font-size:9px;color:'+P.teal+';margin-top:6px">UNLOCKED</div>':''),
+        {style:'padding:16px 14px;text-align:center;opacity:'+(b.ok?1:.42)});
+    }).join('')+'</div>';
+  }
+
+  /* STORE */
+  if(S.tab==="store"){
+    out += '<div style="font-size:12px;color:'+P.muted+'">Spend earned currency on upgrades</div>';
+    out += '<div class="col g10">'+ STORE.map(function(it,i){
+      const afford = it.cur==="gold" ? u.gold>=it.cost : u.diamonds>=it.cost;
+      return card('<div class="row g12">'+
+        '<span style="font-size:26px;flex:0 0 auto">'+it.i+'</span>'+
+        '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#fff">'+it.n+'</div>'+
+        '<div style="font-size:11px;color:'+P.muted+'">'+it.d+'</div></div>'+
+        btn(it.cost+(it.cur==="gold"?"🥇":"💎"),"buy",
+            {color:afford?P.saffron:P.muted, ghost:!afford, sm:true, data:'data-i="'+i+'"'})+
+        '</div>', {style:'padding:14px 16px'});
+    }).join('')+'</div>';
+  }
+
+  out += '</div>';
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════
+   PROFILE CARD MODAL
+═══════════════════════════════════════════════════ */
+function viewProfileModal(){
+  const u=S.user, iq=iqOf(u), rk=rankOf(iq);
+  return '<div class="modal" data-act="close-modal">'+
+    '<div class="card glow anim-in" style="--gc:'+P.saffron+'22;border-color:'+P.saffron+'44;'+
+    'padding:32px 26px;max-width:380px;width:100%;text-align:center" data-stop="1">'+
+    '<div class="cin" style="font-size:10px;color:'+P.saffron+';letter-spacing:5px;margin-bottom:14px">BRAIN PROFILE CARD</div>'+
+    '<div style="font-size:58px;margin-bottom:6px">'+rk.icon+'</div>'+
+    '<div class="cin" style="font-size:23px;font-weight:700;color:#fff">'+esc(u.name)+'</div>'+
+    '<div style="font-size:11px;color:'+P.muted+';margin-bottom:18px">'+esc(u.email)+' · joined '+u.joinDate+'</div>'+
+    '<div class="grid3" style="margin-bottom:16px">'+
+      [["Brain IQ",iq,P.indigo],["Level",u.level,P.saffron],["Streak",u.streak+"🔥",P.rose]].map(function(x){
+        return '<div style="background:rgba(255,255,255,.05);border-radius:12px;padding:12px 6px">'+
+          '<div class="mono" style="font-size:9px;color:'+P.muted+';margin-bottom:3px">'+x[0]+'</div>'+
+          '<div class="cin" style="font-size:19px;font-weight:700;color:'+x[2]+'">'+x[1]+'</div></div>';
+      }).join('')+'</div>'+
+    '<div class="row center">'+currency(u)+'</div>'+
+    '<div class="cin" style="margin-top:14px;font-size:12px;font-weight:600;color:'+rk.color+'">'+rk.label+'</div>'+
+    '<div style="font-size:11px;color:'+P.muted+';margin-top:4px">'+u.totalSessions+' sessions completed</div>'+
+    '<div class="grid2" style="margin-top:18px">'+
+      btn("Close","close-modal",{ghost:true,color:P.muted,full:true})+
+      btn("Copy 📤","share",{color:P.saffron,full:true})+
+    '</div></div></div>';
+}
+
+/* ═══════════════════════════════════════════════════
+   TIMER MANAGER
+═══════════════════════════════════════════════════ */
+let TICK = null;
+function stopTick(){ if(TICK){ clearInterval(TICK); TICK=null; } }
+function startTick(onTick){
+  stopTick();
+  TICK = setInterval(function(){
+    S.g.t = (S.g.t||0) - 1;
+    if(S.g.t <= 0){ S.g.t=0; stopTick(); if(onTick) onTick(true); }
+    else { const n=document.getElementById('ringslot'); if(n) n.innerHTML = ring(S.g.t, S.g.total); }
+  },1000);
+}
+
+/* ═══════════════════════════════════════════════════
+   GAME INITIALISERS
+═══════════════════════════════════════════════════ */
+function initGame(id){
+  const u=S.user, lvl=u.level;
+  stopTick();
+  if(id==="math")   S.g={q:genMath(lvl),score:0,streak:0,count:0,sel:null,t:45,total:45};
+  if(id==="logic")  S.g={pool:shuffle(LOGIC).slice(0,10),i:0,score:0,sel:null,count:0};
+  if(id==="geo")    S.g={pool:shuffle(GEO).slice(0,10),i:0,score:0,sel:null,count:0};
+  if(id==="gk")     S.g={pool:shuffle(GK).slice(0,10),i:0,score:0,sel:null,count:0};
+  if(id==="word")   S.g={pool:shuffle(WORDS).slice(0,10),i:0,score:0,solved:0,fb:null,reveal:false};
+  if(id==="memory"){
+    const len=Math.min(3+lvl,11);
+    S.g={seq:Array.from({length:len},()=>MEMC[rand(0,MEMC.length-1)]),phase:"cd",cd:3,show:-1,flash:null,guess:[],len:len};
+    memCountdown();
+  }
+  if(id==="writing")S.g={pool:shuffle(WRITE).slice(0,5),i:0,score:0,count:0,res:null,text:""};
+  if(id==="sit")    S.g={pool:shuffle(SITS).slice(0,4),i:0,score:0,count:0,res:null,ans:["","",""]};
+  if(id==="stress"){ S.g=Object.assign(genCrusher(lvl),{t:150,total:150,hint:false,done:false,score:0,val:"",sel:null}); startTick(); }
+  if(id==="focus"){ S.g=Object.assign(genFocus(),{phase:"intro",score:0,taps:{},val:""}); }
+  if(id==="reading")S.g={phase:"shelf",book:null,ch:0,qi:0,score:0,sel:null,started:0};
+}
+
+/* ═══════════════════════════════════════════════════
+   1 · MATH SPRINT
+═══════════════════════════════════════════════════ */
+function viewMath(){
+  const g=S.g, m=MOD("math");
+  const glow = g.sel ? (g.sel.ok?P.ok:P.bad) : m.color;
+  let out='<div class="col g14 anim-in">';
+  out += '<div class="row between">'+
+    '<div><div class="mono" style="font-size:9px;color:'+P.muted+'">SCORE</div>'+
+    '<div class="mono" style="font-size:26px;font-weight:700;color:'+P.gold+';line-height:1">'+g.score+'</div></div>'+
+    '<div id="ringslot">'+ring(g.t,g.total)+'</div>'+
+    '<div class="tr"><div class="mono" style="font-size:9px;color:'+P.muted+'">SOLVED</div>'+
+    '<div class="mono" style="font-size:26px;font-weight:700;color:'+m.color+';line-height:1">'+g.count+'</div></div></div>';
+  out += streakChip(g.streak);
+  out += card('<div class="mono" style="font-size:9px;color:'+P.muted+';letter-spacing:3px;margin-bottom:8px">SOLVE THIS</div>'+
+    '<div class="mono" style="font-size:38px;font-weight:700;letter-spacing:2px;color:'+
+    (g.sel?(g.sel.ok?P.ok:P.bad):'#fff')+';transition:color .3s">'+g.q.q+' = ?</div>',
+    {glow:glow, style:'padding:30px 22px;text-align:center'});
+  out += '<div class="grid2">'+ g.q.opts.map(function(o,i){
+    let st=null, lock=false;
+    if(g.sel!==null){ lock=true; if(o===g.q.ans) st='ok'; else if(g.sel.i===i) st='bad'; }
+    return ansBtn('<span class="mono" style="font-size:19px;font-weight:700">'+o+'</span>',
+      'math-pick',{state:st,locked:lock,label:LETTERS[i],accent:m.color,data:'data-i="'+i+'"'});
+  }).join('')+'</div>';
+  if(g.sel!==null) out += btn(g.t===0?"FINISH →":"NEXT QUESTION →","math-next",{color:m.color,full:true});
+  return out+'</div>';
+}
+function mathPick(i){
+  const g=S.g; if(g.sel!==null) return;
+  stopTick();
+  const o=g.q.opts[i], ok=(o===g.q.ans);
+  g.sel={i:i,ok:ok};
+  if(ok){ const b = g.streak>=5?60 : g.streak>=3?40 : g.streak>=1?25 : 15;
+          g.score+=b; g.streak++; scorePop(b); }
+  else g.streak=0;
+  g.count++;
+  render();
+}
+function mathNext(){
+  const g=S.g;
+  if(g.t<=0){ finish(g.score,g.count); return; }
+  g.sel=null; g.q=genMath(S.user.level);
+  render();
+  startTick(function(){ render(); });
+}
+
+/* ═══════════════════════════════════════════════════
+   2/7/8 · MCQ ENGINE (Logic · Geo · GK)
+═══════════════════════════════════════════════════ */
+function viewMCQ(id,tag){
+  const g=S.g, m=MOD(id), q=g.pool[g.i];
+  let out='<div class="col g14 anim-in">';
+  out += counterHead("QUESTION", g.i+1, g.pool.length, m.color, g.score);
+  out += card('<div class="mono" style="font-size:9px;color:'+m.color+';letter-spacing:3px;margin-bottom:10px">'+tag+'</div>'+
+    '<div style="font-size:15px;line-height:1.85;color:'+P.text+'">'+esc(q.q)+'</div>',
+    {glow:m.color, style:'padding:22px 20px'});
+  out += '<div class="col g8">'+ q.o.map(function(o,i){
+    let st=null,lock=false;
+    if(g.sel!==null){ lock=true; if(i===q.a) st='ok'; else if(g.sel.i===i) st='bad'; }
+    return ansBtn(esc(o),'mcq-pick',{state:st,locked:lock,label:LETTERS[i],accent:m.color,data:'data-i="'+i+'"'});
+  }).join('')+'</div>';
+  if(g.sel!==null){
+    out += '<div class="col g9 anim-up">'+
+      feedback(g.sel.ok, LETTERS[q.a]+' — '+esc(q.o[q.a]))+
+      btn(g.i+1>=g.pool.length?"FINISH →":"NEXT →","mcq-next",{color:m.color,full:true})+'</div>';
+  }
+  return out+'</div>';
+}
+function mcqPick(i){
+  const g=S.g; if(g.sel!==null) return;
+  const q=g.pool[g.i], ok=(i===q.a);
+  g.sel={i:i,ok:ok};
+  const pts = S.mode==="logic"?60:55;
+  if(ok){ g.score+=pts; scorePop(pts); }
+  render();
+}
+function mcqNext(){
+  const g=S.g; g.count++;
+  if(g.i+1>=g.pool.length){ finish(g.score,g.count); return; }
+  g.i++; g.sel=null; render();
+}
+
+/* ═══════════════════════════════════════════════════
+   3 · NEURAL MEMORY
+═══════════════════════════════════════════════════ */
+const MEMC=["#FF5F8F","#7B5EFF","#2EC9B0","#FFD060","#FF9F2E","#C77DFF","#4ECD7A","#38C6F4"];
+function memCountdown(){
+  stopTick();
+  TICK=setInterval(function(){
+    S.g.cd--;
+    if(S.g.cd<0){ stopTick(); S.g.phase="show"; S.g.show=0; render(); memShow(); }
+    else render();
+  },900);
+}
+function memShow(){
+  const g=S.g;
+  if(g.show>=g.seq.length){ g.flash=null; g.phase="recall"; render(); return; }
+  g.flash=g.seq[g.show];
+  render();
+  const speed=Math.max(320,660-S.user.level*28);
+  setTimeout(function(){
+    g.flash=null; render();
+    setTimeout(function(){ g.show++; memShow(); },200);
+  },speed);
+}
+function viewMemory(){
+  const g=S.g, m=MOD("memory");
+  if(g.phase==="cd"){
+    return '<div class="tc" style="padding:54px 0">'+
+      '<div class="mono" style="font-size:10px;color:'+P.muted+';letter-spacing:4px;margin-bottom:20px">PREPARE YOUR MIND</div>'+
+      '<div class="cin anim-in" style="font-size:108px;font-weight:900;color:'+P.logic+';line-height:1;'+
+      'text-shadow:0 0 80px '+P.logic+'55">'+(g.cd>0?g.cd:"GO!")+'</div>'+
+      '<div style="font-size:14px;color:'+P.muted+';margin-top:20px">Sequence length: '+
+      '<span style="color:'+m.color+';font-weight:600">'+g.len+' colours</span></div></div>';
+  }
+  if(g.phase==="show"){
+    return '<div class="col g16 tc" style="align-items:center;padding:16px 0">'+
+      '<div class="mono" style="font-size:10px;color:'+P.muted+';letter-spacing:4px">'+
+      Math.min(g.show+1,g.len)+' / '+g.len+' SHOWN</div>'+
+      '<div style="width:150px;height:150px;border-radius:50%;transition:all .16s cubic-bezier(.34,1.56,.64,1);'+
+      'background:'+(g.flash?'radial-gradient(circle at 38% 32%,'+g.flash+','+g.flash+'88)':'rgba(255,255,255,.03)')+';'+
+      'border:3px solid '+(g.flash||'rgba(255,255,255,.08)')+';'+
+      (g.flash?'box-shadow:0 0 80px '+g.flash+'aa,0 0 170px '+g.flash+'33':'')+'"></div>'+
+      '<div class="row g6 center">'+g.seq.map(function(c,i){
+        return '<div style="width:12px;height:12px;border-radius:50%;transition:background .3s;background:'+
+          (i<g.show?c:'rgba(255,255,255,.08)')+'"></div>';
+      }).join('')+'</div></div>';
+  }
+  if(g.phase==="done"){
+    const perfect = g.guess.every(function(v,i){ return v===g.seq[i]; });
+    return '<div class="col g16 tc anim-in">'+
+      '<div style="font-size:66px">'+(perfect?'🎯':'💥')+'</div>'+
+      '<div class="cin" style="font-size:25px;font-weight:700;color:'+(perfect?P.ok:P.bad)+'">'+
+      (perfect?'PERFECT RECALL':'Partial Match')+'</div>'+
+      '<div class="row center g6" style="flex-wrap:wrap">'+g.seq.map(function(c,i){
+        return '<div style="width:28px;height:28px;border-radius:50%;background:'+c+';border:3px solid '+
+          (g.guess[i]!==c?P.bad:'transparent')+'"></div>';
+      }).join('')+'</div>'+
+      '<div class="mono" style="font-size:30px;font-weight:700;color:'+P.gold+'">+'+g.pts+' pts</div>'+
+      btn("CONTINUE →","mem-done",{color:m.color,full:true})+'</div>';
+  }
+  // recall
+  return '<div class="col g16">'+
+    '<div class="tc">'+
+      '<div class="mono" style="font-size:9px;color:'+P.muted+';letter-spacing:4px;margin-bottom:10px">REPRODUCE THE SEQUENCE</div>'+
+      '<div class="row center g6" style="flex-wrap:wrap;margin-bottom:5px">'+g.seq.map(function(_,i){
+        return '<div style="width:20px;height:20px;border-radius:50%;transition:background .2s;background:'+
+          (i<g.guess.length?g.guess[i]:'rgba(255,255,255,.08)')+';border:2.5px solid '+
+          (i<g.guess.length && g.guess[i]!==g.seq[i] ? P.bad : 'transparent')+'"></div>';
+      }).join('')+'</div>'+
+      '<div class="mono" style="font-size:11px;color:'+P.muted+'">'+g.guess.length+' / '+g.len+'</div>'+
+    '</div>'+
+    '<div class="memgrid">'+MEMC.map(function(c,i){
+      return '<button data-act="mem-tap" data-c="'+i+'" style="background:'+c+';box-shadow:0 4px 18px '+c+'55"></button>';
+    }).join('')+'</div></div>';
+}
+function memTap(ci){
+  const g=S.g, c=MEMC[ci];
+  g.guess.push(c);
+  if(g.guess.length>=g.seq.length){
+    const right = g.guess.filter(function(v,i){ return v===g.seq[i]; }).length;
+    const perfect = right===g.seq.length;
+    g.pts = perfect ? g.len*28 : Math.round(right/g.seq.length*g.len*18);
+    setTimeout(function(){ g.phase="done"; render(); },420);
+  }
+  render();
+}
+
+/* ═══════════════════════════════════════════════════
+   4 · WORD FORGE
+═══════════════════════════════════════════════════ */
+function viewWord(){
+  const g=S.g, m=MOD("word"), w=g.pool[g.i];
+  let out='<div class="col g14 anim-in">';
+  out += counterHead("WORD", g.i+1, g.pool.length, m.color, g.score);
+  out += card('<span class="tag" style="background:'+m.color+'18;color:'+m.color+'">'+w.c+'</span>'+
+    '<div class="mono" style="font-size:25px;font-weight:700;color:#fff;letter-spacing:10px;margin-top:14px">'+
+    w.s.split('').join(' · ')+'</div>'+
+    '<div style="font-size:12px;color:'+P.muted+';margin-top:12px;font-style:italic">'+esc(w.h)+'</div>',
+    {glow:m.color, style:'padding:24px;text-align:center'});
+  const bc = g.fb==="ok"?P.ok : g.fb==="bad"?P.bad : 'rgba(255,255,255,.12)';
+  out += '<input id="w-in" class="inp mono" placeholder="UNSCRAMBLE & TYPE"'+(g.fb==="ok"?' disabled':'')+
+    ' style="font-size:17px;font-weight:700;text-align:center;letter-spacing:7px;border:2px solid '+bc+';padding:15px'+
+    (g.fb==="bad"?';animation:shake .42s ease':'')+'" value="'+esc(g.typed||'')+'">';
+  if(g.fb!=="ok"){
+    out += '<div class="row g9">'+
+      btn("CHECK ↵","word-check",{color:m.color,style:'flex:1'})+
+      (g.reveal?'':btn("REVEAL","word-reveal",{ghost:true,color:P.muted,style:'padding:13px 15px'}))+'</div>';
+  }
+  if(g.reveal && g.fb!=="ok"){
+    out += card('<span style="font-size:13px;color:'+P.muted+'">Answer: </span>'+
+      '<span class="mono" style="font-size:15px;font-weight:700;color:'+P.bad+';letter-spacing:5px">'+w.w+'</span>',
+      {style:'padding:11px 15px;border-color:'+P.bad+'44'});
+  }
+  if(g.fb==="ok"){
+    out += '<div class="col g9 anim-up">'+
+      card('<span style="color:'+P.ok+';font-weight:600">✓ '+w.w+' — Correct!</span>',
+        {style:'padding:11px 15px;text-align:center;border-color:'+P.ok+'44'})+
+      btn(g.i+1>=g.pool.length?"FINISH →":"NEXT WORD →","word-next",{color:m.color,full:true})+'</div>';
+  }
+  return out+'</div>';
+}
+function wordCheck(){
+  const g=S.g, inp=document.getElementById('w-in');
+  const v=(inp?inp.value:'').trim().toUpperCase();
+  g.typed=v;
+  if(v===g.pool[g.i].w){ g.fb="ok"; g.score+=50; g.solved++; scorePop(50); render(); }
+  else { g.fb="bad"; render(); setTimeout(function(){ if(S.g===g && g.fb==="bad"){ g.fb=null; render(); } },560); }
+}
+function wordNext(){
+  const g=S.g;
+  if(g.i+1>=g.pool.length){ finish(g.score,g.solved); return; }
+  g.i++; g.fb=null; g.reveal=false; g.typed=''; render();
+  setTimeout(function(){ const n=document.getElementById('w-in'); if(n) n.focus(); },60);
+}
+
+/* ═══════════════════════════════════════════════════
+   5 · MIND WRITER
+═══════════════════════════════════════════════════ */
+function viewWriting(){
+  const g=S.g, m=MOD("writing"), pr=g.pool[g.i];
+  let out='<div class="col g14 anim-in">';
+  out += counterHead("PROMPT", g.i+1, g.pool.length, m.color, g.score);
+  out += card('<span class="tag" style="background:'+m.color+'18;color:'+m.color+'">'+
+      (pr.t==="synonym"?"SYNONYM CHALLENGE":"EXPRESSION TASK")+'</span>'+
+    '<div style="font-size:14px;line-height:1.85;color:'+P.text+';margin:12px 0 8px">'+esc(pr.task)+'</div>'+
+    '<div style="font-size:11px;color:'+P.muted+';font-style:italic">💡 '+esc(pr.hint)+'</div>',
+    {glow:m.color, style:'padding:20px'});
+
+  if(!g.res){
+    out += '<textarea id="wr-in" class="inp" placeholder="Write your response — quality scores higher than quantity…">'+esc(g.text||'')+'</textarea>';
+    out += '<div class="row between">'+
+      '<div class="mono" style="font-size:10px;color:'+P.muted+'" id="wr-count">'+wc(g.text)+' words</div>'+
+      btn("Submit for Scoring","wr-submit",{color:m.color})+'</div>';
+  } else {
+    const r=g.res, gc=GRADE_C[r.grade];
+    out += '<div class="col g11 anim-up">'+
+      card('<div class="cin" style="font-size:56px;font-weight:900;color:'+gc+';line-height:1">'+r.grade+'</div>'+
+        '<div class="mono" style="font-size:9px;color:'+P.muted+';margin-top:3px">SCORE '+r.score+' / 100</div>'+
+        '<div style="font-size:13px;color:'+P.text+';margin-top:12px;line-height:1.8">'+esc(r.feedback)+'</div>'+
+        '<div style="font-size:11px;color:'+P.ok+';margin-top:8px">✓ '+esc(r.strengths)+'</div>'+
+        '<div style="font-size:11px;color:'+P.saffron+';margin-top:3px">→ '+esc(r.improve)+'</div>'+
+        '<div class="mono" style="font-size:13px;font-weight:700;color:'+P.gold+';margin-top:12px">+'+r.pts+' pts earned</div>',
+        {glow:gc, style:'padding:22px;text-align:center'})+
+      btn(g.i+1>=g.pool.length?"FINISH →":"NEXT PROMPT →","wr-next",{color:m.color,full:true})+'</div>';
+  }
+  return out+'</div>';
+}
+function wrSubmit(){
+  const g=S.g, n=document.getElementById('wr-in');
+  const txt = n?n.value:'';
+  g.text=txt;
+  if(wc(txt)<8){ toast("Write at least 8 words to be scored."); return; }
+  const r = scoreText(txt, g.pool[g.i].keys, 30);
+  r.pts = Math.round(r.score/100*80);
+  g.res=r; g.score+=r.pts; g.count++;
+  scorePop(r.pts);
+  render();
+}
+function wrNext(){
+  const g=S.g;
+  if(g.i+1>=g.pool.length){ finish(g.score,g.count); return; }
+  g.i++; g.res=null; g.text=""; render();
+}
+
+/* ═══════════════════════════════════════════════════
+   6 · SITUATION INTEL
+═══════════════════════════════════════════════════ */
+function viewSit(){
+  const g=S.g, m=MOD("sit"), s=g.pool[g.i];
+  let out='<div class="col g13 anim-in">';
+  out += counterHead("SCENARIO", g.i+1, g.pool.length, m.color, g.score);
+  out += card('<div class="mono" style="font-size:9px;color:'+m.color+';letter-spacing:3px;margin-bottom:10px">🔍 SCENARIO</div>'+
+    '<div style="font-size:13.5px;line-height:1.85;color:'+P.text+'">'+esc(s.s)+'</div>',
+    {glow:m.color, style:'padding:20px'});
+
+  if(!g.res){
+    out += s.q.map(function(q,i){
+      return '<div><div style="font-size:12px;color:'+m.color+';font-weight:600;margin-bottom:5px">'+(i+1)+'. '+esc(q)+'</div>'+
+        '<textarea id="si-'+i+'" class="inp" style="min-height:74px;font-size:12.5px" placeholder="Your analysis…">'+esc(g.ans[i]||'')+'</textarea></div>';
+    }).join('');
+    out += btn("Submit Analysis","si-submit",{color:m.color,full:true});
+  } else {
+    const r=g.res, gc=GRADE_C[r.grade];
+    out += '<div class="col g10 anim-up">'+
+      card('<div class="cin" style="font-size:56px;font-weight:900;color:'+gc+';line-height:1">'+r.grade+'</div>'+
+        '<div class="row center g8" style="margin-top:8px;flex-wrap:wrap">'+
+          '<span class="tag" style="background:rgba(78,205,122,.15);color:'+P.ok+'">'+
+            (r.loop?'✓ Loophole identified':'○ Keep digging')+'</span>'+
+          '<span class="tag" style="background:rgba(255,160,46,.15);color:'+P.saffron+'">Solution: '+r.quality+'</span>'+
+        '</div>'+
+        '<div style="font-size:13px;color:'+P.text+';margin-top:12px;line-height:1.8">'+esc(r.feedback)+'</div>'+
+        '<div class="mono" style="font-size:13px;font-weight:700;color:'+P.gold+';margin-top:10px">+'+r.pts+' pts</div>',
+        {glow:gc, style:'padding:22px;text-align:center'})+
+      btn(g.i+1>=g.pool.length?"FINISH →":"NEXT SCENARIO →","si-next",{color:m.color,full:true})+'</div>';
+  }
+  return out+'</div>';
+}
+function siSubmit(){
+  const g=S.g, s=g.pool[g.i];
+  g.ans = s.q.map(function(_,i){ const n=document.getElementById('si-'+i); return n?n.value:''; });
+  const joined = g.ans.join(' ');
+  if(wc(joined)<10){ toast("Answer at least one question with 10+ words."); return; }
+  const r = scoreText(joined, s.keys, 45);
+  r.pts = Math.round(r.score/100*100);
+  r.loop = r.score>=55;
+  r.quality = r.score>=80?"strong" : r.score>=55?"fair" : "developing";
+  g.res=r; g.score+=r.pts; g.count++;
+  scorePop(r.pts);
+  render();
+}
+function siNext(){
+  const g=S.g;
+  if(g.i+1>=g.pool.length){ finish(g.score,g.count); return; }
+  g.i++; g.res=null; g.ans=["","",""]; render();
+}
+
+/* ═══════════════════════════════════════════════════
+   9 · BRAIN CRUSHER
+═══════════════════════════════════════════════════ */
+function genCrusher(level){
+  const kinds=["sequence","riddle","lateral","crypto"];
+  const k=pick(kinds);
+  if(k==="sequence"){
+    const s=pick(SEQS);
+    return {kind:"sequence",title:"Sequence Decoder",
+      desc:"Find the pattern and complete the sequence:\n\n"+s.s.join("  →  ")+"  →  ???",
+      answer:s.n, hintText:"Pattern: "+s.r, numeric:true};
+  }
+  if(k==="riddle"){
+    const r=pick(RIDDLES);
+    return {kind:"riddle",title:"Mind Riddle",desc:r.q,opts:r.o,ansIdx:r.a,
+      hintText:"Think laterally, not literally. The answer is an everyday object or idea."};
+  }
+  if(k==="lateral"){
+    const l=pick(LATERALS);
+    return {kind:"lateral",title:"Lateral Thinking",desc:l.q,hintText:l.hint,answer:l.a};
+  }
+  const c=pick(CRYPTOS);
+  return {kind:"crypto",title:"Cryptarithmetic",
+    desc:"Each letter represents one unique digit (0–9). Solve:\n\n"+c.eq,
+    hintText:c.hint, answer:c.hint};
+}
+function viewStress(){
+  const g=S.g, m=MOD("stress");
+  let out='<div class="col g14 anim-in">';
+  out += '<div class="row between">'+
+    '<div><div class="mono" style="font-size:9px;color:'+m.color+';letter-spacing:2px">🧨 BRAIN CRUSHER</div>'+
+    '<div style="font-size:15px;font-weight:600;color:#fff">'+g.title+'</div></div>'+
+    '<div id="ringslot">'+ring(g.t,g.total)+'</div></div>';
+  out += card('<div style="font-size:14px;line-height:1.9;color:'+P.text+';white-space:pre-line">'+esc(g.desc)+'</div>',
+    {glow:m.color, style:'padding:20px'});
+
+  if(!g.done){
+    if(!g.hint) out += btn("💡 Show Hint","st-hint",{ghost:true,color:P.muted,full:true,style:'font-size:12px;padding:10px'});
+    else out += card('<div class="mono" style="font-size:12px;color:'+m.color+';line-height:1.7">'+esc(g.hintText)+'</div>',
+      {style:'padding:11px 15px;border-color:'+m.color+'44'});
+
+    if(g.kind==="riddle"){
+      out += '<div class="col g8">'+g.opts.map(function(o,i){
+        return ansBtn(esc(o),'st-opt',{state:g.sel===i?'ok':null,label:LETTERS[i],accent:m.color,data:'data-i="'+i+'"'});
+      }).join('')+'</div>';
+    } else {
+      out += '<textarea id="st-in" class="inp" style="min-height:92px" placeholder="'+
+        (g.numeric?'Enter the number…':'Write your solution or your working…')+'">'+esc(g.val||'')+'</textarea>';
+    }
+    out += btn("SUBMIT SOLUTION","st-submit",{color:m.color,full:true});
+  } else {
+    out += '<div class="col g11 anim-up">'+
+      card('<div style="font-size:50px">'+(g.score>120?'🏆':g.score>50?'💪':'😤')+'</div>'+
+        '<div class="mono" style="font-size:28px;font-weight:700;color:'+P.gold+';margin-top:8px">+'+g.score+' pts</div>'+
+        '<div style="font-size:13px;color:'+P.muted+';margin-top:10px;line-height:1.75">'+
+          (g.kind==="sequence" ? 'Correct answer: <span class="mono" style="color:'+P.ok+'">'+g.answer+'</span><br>'+esc(g.hintText)
+           : g.kind==="riddle" ? 'Answer: <span style="color:'+P.ok+'">'+esc(g.opts[g.ansIdx])+'</span>'
+           : esc(g.answer||g.hintText))+
+        '</div>',
+        {glow:g.score>80?P.ok:m.color, style:'padding:22px;text-align:center'})+
+      btn("CONTINUE →","st-done",{color:m.color,full:true})+'</div>';
+  }
+  return out+'</div>';
+}
+function stSubmit(){
+  const g=S.g; stopTick();
+  let pts=0;
+  if(g.kind==="sequence"){
+    const n=document.getElementById('st-in');
+    const v=parseInt((n?n.value:'').trim(),10);
+    g.val=n?n.value:'';
+    pts = (v===g.answer) ? Math.max(20, Math.round(g.t*1.8)) : 0;
+  } else if(g.kind==="riddle"){
+    pts = (g.sel===g.ansIdx) ? Math.max(20, Math.round(g.t*1.5)) : 0;
+  } else {
+    const n=document.getElementById('st-in');
+    g.val=n?n.value:'';
+    pts = Math.min(150, wc(g.val)*4+20);
+  }
+  if(g.hint) pts = Math.max(0, pts-20);
+  g.score=Math.round(pts); g.done=true;
+  if(pts>0) scorePop(g.score);
+  render();
+}
+
+/* ═══════════════════════════════════════════════════
+   10 · FOCUS LOCK
+═══════════════════════════════════════════════════ */
+function genFocus(){
+  const kinds=["odd","count","rapid","stroop","scan"];
+  const k=pick(kinds);
+  if(k==="odd"){
+    const grid=Array(16).fill("●"); const idx=rand(0,15); grid[idx]="◆";
+    return {kind:"odd",title:"Spot the Odd One",instr:"Tap the DIFFERENT shape as fast as you can.",grid:grid,idx:idx,t:10,total:10};
+  }
+  if(k==="count"){
+    const pool=["🔴","🔵","🟡","🟢"], target=pick(pool);
+    const items=Array.from({length:25},()=>pick(pool));
+    return {kind:"count",title:"Count the Target",instr:"Count every "+target+" you can see before time runs out.",
+      target:target,items:items,answer:items.filter(x=>x===target).length,t:16,total:16};
+  }
+  if(k==="rapid"){
+    const target=pick(["⭐","💎","🔥","⚡","🎯"]);
+    const dist=["○","□","△","▽","◇","◈","⬡","⬢"];
+    const seq=Array.from({length:16},()=>rand(0,3)===0?target:pick(dist));
+    return {kind:"rapid",title:"Rapid Response",instr:"Tap ONLY "+target+" — ignore every other symbol.",
+      target:target,seq:seq,t:20,total:20};
+  }
+  if(k==="stroop"){
+    const cols=["RED","BLUE","GREEN","YELLOW"];
+    const map={RED:"#ff4444",BLUE:"#4488ff",GREEN:"#44ee88",YELLOW:"#ffdd00"};
+    const word=pick(cols), ink=pick(cols.filter(c=>c!==word));
+    return {kind:"stroop",title:"Stroop Conflict",instr:"Name the INK COLOUR of the word — not what the word says.",
+      word:word,ink:ink,map:map,answer:ink,t:14,total:14};
+  }
+  const L="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const target=pick(L);
+  const grid=Array.from({length:36},()=>rand(0,4)===0?target:pick(L.filter(x=>x!==target)));
+  return {kind:"scan",title:"Grid Scanner",instr:"Find and count every '"+target+"' hidden in the grid.",
+    target:target,grid:grid,answer:grid.filter(x=>x===target).length,t:20,total:20};
+}
+function viewFocus(){
+  const g=S.g, m=MOD("focus");
+  let out='<div class="col g14 anim-in">';
+
+  if(g.phase==="intro"){
+    out += card('<div class="mono" style="font-size:9px;color:'+m.color+';letter-spacing:3px;margin-bottom:10px">🎯 '+g.title+'</div>'+
+      '<div style="font-size:15px;line-height:1.8;color:'+P.text+'">'+esc(g.instr)+'</div>'+
+      '<div class="mono" style="font-size:10px;color:'+P.muted+';margin-top:10px">Time limit: '+g.total+'s</div>',
+      {glow:m.color, style:'padding:22px'});
+    out += btn("START TASK →","fo-start",{color:m.color,full:true});
+    return out+'</div>';
+  }
+
+  if(g.phase==="result"){
+    out += '<div class="col g11 anim-up">'+
+      card('<div style="font-size:48px">'+(g.score>50?'🎯':g.score>20?'👁️':'🔄')+'</div>'+
+        '<div class="mono" style="font-size:28px;font-weight:700;color:'+P.gold+';margin-top:8px">+'+g.score+' pts</div>'+
+        '<div style="font-size:13px;color:'+P.muted+';margin-top:8px">'+esc(g.note||'Focus session complete.')+'</div>',
+        {glow:g.score>40?P.ok:m.color, style:'padding:22px;text-align:center'})+
+      btn("CONTINUE →","fo-done",{color:m.color,full:true})+'</div>';
+    return out+'</div>';
+  }
+
+  /* playing */
+  out += '<div class="row between"><div style="font-weight:600;color:'+m.color+'">'+g.title+'</div>'+
+         '<div id="ringslot">'+ring(g.t,g.total)+'</div></div>';
+
+  if(g.kind==="odd"){
+    out += '<div class="grid4">'+g.grid.map(function(x,i){
+      return '<button class="lift" data-act="fo-odd" data-i="'+i+'" style="aspect-ratio:1;border-radius:13px;'+
+        'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:22px">'+x+'</button>';
+    }).join('')+'</div>';
+  }
+  if(g.kind==="count"){
+    out += '<div class="tc" style="font-size:14px;color:'+P.text+'">Counting: <span style="font-size:20px">'+g.target+'</span></div>';
+    out += '<div class="grid5">'+g.items.map(function(x){
+      return '<div style="font-size:21px;text-align:center;padding:4px">'+x+'</div>';
+    }).join('')+'</div>';
+    if(g.t<=0){
+      out += '<input id="fo-in" class="inp mono" type="number" placeholder="How many?" style="font-size:19px;text-align:center">';
+      out += btn("SUBMIT COUNT","fo-count",{color:m.color,full:true});
+    } else {
+      out += '<div class="tc mono" style="font-size:11px;color:'+P.muted+'">Answer box appears when time is up</div>';
+    }
+  }
+  if(g.kind==="scan"){
+    out += '<div class="tc" style="font-size:14px;color:'+P.text+'">Find every: <span class="mono" style="font-size:19px;color:'+m.color+'">'+g.target+'</span></div>';
+    out += '<div class="grid6">'+g.grid.map(function(x){
+      return '<div class="mono" style="font-size:14px;text-align:center;padding:5px;color:'+P.muted+'">'+x+'</div>';
+    }).join('')+'</div>';
+    if(g.t<=0){
+      out += '<input id="fo-in" class="inp mono" type="number" placeholder="How many?" style="font-size:19px;text-align:center">';
+      out += btn("SUBMIT COUNT","fo-count",{color:m.color,full:true});
+    } else {
+      out += '<div class="tc mono" style="font-size:11px;color:'+P.muted+'">Answer box appears when time is up</div>';
+    }
+  }
+  if(g.kind==="rapid"){
+    out += '<div class="tc" style="font-size:13px;color:'+P.text+'">Tap ONLY <span style="font-size:22px">'+g.target+'</span></div>';
+    out += '<div class="grid4">'+g.seq.map(function(x,i){
+      const tapped = g.taps[i];
+      const good = x===g.target;
+      const bgc = tapped ? (good?'rgba(46,201,176,.25)':'rgba(255,95,143,.2)') : 'rgba(255,255,255,.05)';
+      const bdc = tapped ? (good?P.teal:P.bad) : 'rgba(255,255,255,.1)';
+      return '<button class="lift" data-act="fo-tap" data-i="'+i+'" style="font-size:24px;padding:11px;'+
+        'border-radius:12px;background:'+bgc+';border:1px solid '+bdc+'">'+x+'</button>';
+    }).join('')+'</div>';
+    out += btn("DONE","fo-rapid",{color:m.color,full:true});
+  }
+  if(g.kind==="stroop"){
+    out += '<div class="col g14" style="align-items:center">'+
+      '<div class="cin" style="font-size:54px;font-weight:900;color:'+g.map[g.ink]+'">'+g.word+'</div>'+
+      '<div style="font-size:12px;color:'+P.muted+'">What colour is the TEXT above?</div>'+
+      '<div class="grid2" style="width:100%">'+["RED","BLUE","GREEN","YELLOW"].map(function(c){
+        return '<button class="lift" data-act="fo-stroop" data-c="'+c+'" style="padding:13px;border-radius:12px;'+
+          'border:2px solid '+(g.val===c?g.map[c]:'rgba(255,255,255,.1)')+';font-weight:700;font-size:13px;'+
+          'background:'+(g.val===c?g.map[c]+'22':'rgba(255,255,255,.04)')+';color:'+g.map[c]+'">'+c+'</button>';
+      }).join('')+'</div>'+
+      btn("SUBMIT","fo-stroopgo",{color:m.color,full:true,disabled:!g.val})+'</div>';
+  }
+  return out+'</div>';
+}
+function focusEnd(pts,note){
+  stopTick();
+  S.g.score=Math.max(0,Math.round(pts));
+  S.g.note=note;
+  S.g.phase="result";
+  if(S.g.score>0) scorePop(S.g.score);
+  render();
+}
+
+/* ═══════════════════════════════════════════════════
+   11 · READING LAB
+═══════════════════════════════════════════════════ */
+function viewReading(){
+  const g=S.g, m=MOD("reading");
+  if(g.phase==="shelf"){
+    return '<div class="col g14 anim-in">'+
+      '<div class="mono" style="font-size:9px;color:'+P.muted+';letter-spacing:4px">📚 READING LAB — CHOOSE A BOOK</div>'+
+      BOOKS.map(function(b){
+        return card('<div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">'+esc(b.title)+'</div>'+
+          '<div style="font-size:12px;color:'+P.muted+';margin-bottom:9px">by '+esc(b.author)+' · '+b.genre+'</div>'+
+          '<div class="row g8"><span class="tag" style="background:'+b.tint+'18;color:'+b.tint+'">'+b.chapters.length+' chapters</span>'+
+          '<span style="font-size:11px;color:'+P.muted+'">Quiz after each chapter</span></div>',
+          {glow:b.tint, cls:'lift', style:'padding:18px 20px;cursor:pointer" data-act="rd-open" data-id="'+b.id+'"'});
+      }).join('')+'</div>';
+  }
+  const bk=BOOKS.find(b=>b.id===g.book), ch=bk.chapters[g.ch];
+
+  if(g.phase==="read"){
+    return '<div class="col g14 anim-in">'+
+      '<div class="row between">'+
+        '<div><div style="font-size:11px;color:'+bk.tint+';font-weight:600">'+esc(bk.title)+'</div>'+
+        '<div class="mono" style="font-size:10px;color:'+P.muted+'">Chapter '+(g.ch+1)+' of '+bk.chapters.length+'</div></div>'+
+        '<span class="tag" style="background:'+bk.tint+'18;color:'+bk.tint+'">READ & ABSORB</span></div>'+
+      card('<div style="font-size:13px;font-weight:700;color:'+bk.tint+';margin-bottom:14px">'+esc(ch.title)+'</div>'+
+        '<div style="font-size:14.5px;line-height:2.05;color:'+P.text+'">'+esc(ch.text)+'</div>',
+        {glow:bk.tint, style:'padding:24px'})+
+      '<div class="tc" style="font-size:11px;color:'+P.muted+'">Read carefully — you will be quizzed on this passage</div>'+
+      btn("I've Read This — Take Quiz →","rd-quiz",{color:bk.tint,full:true})+'</div>';
+  }
+
+  if(g.phase==="quiz"){
+    const pool=RQUIZ[g.book+"_"+g.ch]||[], q=pool[g.qi];
+    let out='<div class="col g14 anim-in">';
+    out += counterHead("COMPREHENSION", g.qi+1, pool.length, bk.tint, g.score);
+    out += card('<div class="mono" style="font-size:9px;color:'+bk.tint+';letter-spacing:3px;margin-bottom:10px">📡 COMPREHENSION CHECK</div>'+
+      '<div style="font-size:15px;line-height:1.8;color:'+P.text+'">'+esc(q.q)+'</div>',
+      {glow:bk.tint, style:'padding:20px'});
+    out += '<div class="col g8">'+q.o.map(function(o,i){
+      let st=null,lock=false;
+      if(g.sel!==null){ lock=true; if(i===q.a) st='ok'; else if(g.sel.i===i) st='bad'; }
+      return ansBtn(esc(o),'rd-pick',{state:st,locked:lock,label:LETTERS[i],accent:bk.tint,data:'data-i="'+i+'"'});
+    }).join('')+'</div>';
+    if(g.sel!==null){
+      const lastQ = g.qi+1>=pool.length, lastCh = g.ch+1>=bk.chapters.length;
+      out += '<div class="col g9 anim-up">'+feedback(g.sel.ok, LETTERS[q.a]+' — '+esc(q.o[q.a]))+
+        btn(lastQ&&lastCh?"FINISH →":lastQ?"NEXT CHAPTER →":"NEXT QUESTION →","rd-next",{color:bk.tint,full:true})+'</div>';
+    }
+    return out+'</div>';
+  }
+  return '';
+}
+
+/* ═══════════════════════════════════════════════════
+   RESULT SCREEN
+═══════════════════════════════════════════════════ */
+function viewResult(){
+  const r=S.last, m=MOD(S.mode);
+  const grade = r.score>=200?"S" : r.score>=120?"A" : r.score>=70?"B" : "C";
+  const GC={S:P.gold,A:P.ok,B:P.logic,C:P.muted};
+  const GM={S:"LEGENDARY",A:"EXCELLENT",B:"SOLID",C:"KEEP GOING"};
+  const c=GC[grade];
+  return '<div class="col g16 tc anim-in">'+
+    '<div class="mono" style="font-size:9px;color:'+P.muted+';letter-spacing:4px">SESSION COMPLETE</div>'+
+    '<div style="height:156px;display:flex;align-items:center;justify-content:center">'+
+      '<div style="width:130px;height:130px;border-radius:50%;display:flex;flex-direction:column;'+
+      'align-items:center;justify-content:center;background:radial-gradient(circle,'+c+'28,transparent);'+
+      'border:2px solid '+c+'55;box-shadow:0 0 60px '+c+'33">'+
+      '<div class="cin" style="font-size:64px;font-weight:900;color:'+c+';line-height:1">'+grade+'</div>'+
+      '<div class="mono" style="font-size:9px;color:'+c+';letter-spacing:2px">'+GM[grade]+'</div></div></div>'+
+    '<div class="grid3">'+
+      statBox("Score", r.score, P.gold)+
+      statBox("XP", "+"+r.xp, P.logic)+
+      statBox("Points", "+"+r.pts, P.violet)+
+    '</div>'+
+    (r.gold>0 ? '<div style="font-size:13px;color:'+P.gold+'">🥇 +'+r.gold+' Gold earned!</div>' : '')+
+    (r.diamond>0 ? '<div style="font-size:14px;color:'+P.sky+';font-weight:600">💎 +'+r.diamond+' Diamond unlocked!</div>' : '')+
+    (r.maxed ? card('<div style="font-size:12px;color:'+P.muted+'">Daily limit reached for '+m.name+
+                    '. Fresh challenges tomorrow.</div>',{style:'padding:11px 15px'}) : '')+
+    '<div class="row g10">'+
+      (r.maxed?'':btn("Play Again","retry",{color:m.color,style:'flex:1'}))+
+      btn("← Home","home",{ghost:true,color:P.muted,style:'flex:1'})+
+    '</div></div>';
+}
+
+/* ═══════════════════════════════════════════════════
+   SESSION COMPLETION
+═══════════════════════════════════════════════════ */
+function finish(score,correct){
+  stopTick();
+  let u=S.user;
+  const xpGain  = Math.floor(score/2.5)+22;
+  const ptsGain = Math.floor(score/1.8)+12;
+  const beforeG = u.gold, beforeD = u.diamonds;
+  u = addPoints(u, ptsGain);
+  const goldGain = u.gold - beforeG + (u.diamonds-beforeD)*100;
+  const diaGain  = u.diamonds - beforeD;
+  u.xp += xpGain;
+  u.level = Math.floor(u.xp/150)+1;
+  const ds = Object.assign({}, u.dailySessions);
+  ds[S.mode] = (ds[S.mode]||0)+1;
+  u.dailySessions = ds;
+  if(u.lastLogin !== today()){ u.streak = (u.streak||0)+1; u.lastLogin = today(); }
+  u.totalSessions = (u.totalSessions||0)+1;
+  saveUser(u);
+  S.last = {score:score, correct:correct, xp:xpGain, pts:ptsGain,
+            gold:Math.max(0,goldGain), diamond:diaGain, maxed: ds[S.mode]>=10};
+  S.screen="result";
+  render();
+}
+
+/* ═══════════════════════════════════════════════════
+   PLAY ROUTER
+═══════════════════════════════════════════════════ */
+function viewPlay(){
+  switch(S.mode){
+    case "math":    return viewMath();
+    case "logic":   return viewMCQ("logic","🧩 LOGIC PUZZLE");
+    case "geo":     return viewMCQ("geo","🌍 GEOGRAPHY");
+    case "gk":      return viewMCQ("gk","📡 KNOWLEDGE PULSE");
+    case "memory":  return viewMemory();
+    case "word":    return viewWord();
+    case "writing": return viewWriting();
+    case "sit":     return viewSit();
+    case "stress":  return viewStress();
+    case "focus":   return viewFocus();
+    case "reading": return viewReading();
+  }
+  return '';
+}
+
+/* ═══════════════════════════════════════════════════
+   MASTER RENDER
+═══════════════════════════════════════════════════ */
+function render(){
+  const sh = el('shell');
+  let out = '';
+
+  /* top bar */
+  out += '<div class="row between" style="margin-bottom:16px">'+
+    '<div data-act="'+(S.user&&S.screen!=="play"?"home":"")+'" style="cursor:pointer">'+
+      '<div class="cin" style="font-size:21px;font-weight:900;letter-spacing:1px">'+
+        '<span style="color:'+P.saffron+'">PRAJ</span><span style="color:'+P.indigo+'">NIFY</span></div>'+
+      '<div class="mono" style="font-size:9px;color:'+P.muted+';letter-spacing:3px">COGNITIVE TRAINING</div>'+
+    '</div>'+
+    '<div class="row g8">'+
+      (S.user && S.screen!=="play" ? currency(S.user,true) : '')+
+      (S.user && S.screen==="play" ?
+        '<button class="lift" data-act="exit" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);'+
+        'border-radius:10px;padding:7px 14px;color:'+P.muted+';font-size:12px">← Exit</button>' : '')+
+    '</div></div>';
+
+  /* mode chip */
+  if(S.screen==="play" && S.mode){
+    const m=MOD(S.mode), used=(S.user.dailySessions||{})[S.mode]||0;
+    out += '<div class="row g8" style="display:inline-flex;margin-bottom:14px;background:'+m.color+'0e;'+
+      'border:1px solid '+m.color+'33;border-radius:99px;padding:6px 14px">'+
+      '<span style="font-size:13px">'+m.icon+'</span>'+
+      '<span style="font-size:12px;font-weight:600;color:'+m.color+'">'+m.name+'</span>'+
+      '<span class="mono" style="font-size:9px;color:'+P.muted+'">Session '+(used+1)+'/10</span></div>';
+  }
+
+  if(!S.user)              out += viewAuth();
+  else if(S.screen==="home")   out += viewHome();
+  else if(S.screen==="play")   out += viewPlay();
+  else if(S.screen==="result") out += viewResult();
+
+  if(S.modal==="profile") out += viewProfileModal();
+
+  sh.innerHTML = out;
+
+  /* restore live input values / focus */
+  const wi=document.getElementById('w-in');
+  if(wi && S.g.fb!=="ok"){ wi.focus(); wi.setSelectionRange(wi.value.length,wi.value.length); }
+}
+
+/* ═══════════════════════════════════════════════════
+   EVENT DELEGATION
+═══════════════════════════════════════════════════ */
+document.addEventListener('click', function(e){
+  const t = e.target.closest('[data-act]');
+  if(!t) return;
+  const a = t.getAttribute('data-act');
+  if(!a) return;
+  const D = k => t.getAttribute('data-'+k);
+
+  switch(a){
+    /* ── AUTH ── */
+    case "auth-tab":  S.authTab=D('t'); S.authErr=""; render(); break;
+    case "auth-go":   doAuth(); break;
+    case "auth-demo": demoAccount(); break;
+    case "ob-next":   S.onboard++; render(); break;
+    case "ob-done":   S.onboard=-1; S.user=LS.get("praj_"+S.pendingMail); S.screen="home"; render(); break;
+
+    /* ── NAV ── */
+    case "tab":     S.tab=D('t'); render(); break;
+    case "home":    stopTick(); S.screen="home"; S.mode=null; render(); break;
+    case "exit":    stopTick(); S.screen="home"; S.mode=null; render(); break;
+    case "logout":  stopTick(); S.user=null; S.screen="auth"; S.onboard=-1; render(); break;
+    case "profile": S.modal="profile"; render(); break;
+    case "close-modal": if(e.target.closest('[data-stop]') && a!=="close-modal") break; S.modal=null; render(); break;
+    case "share":   shareCard(); break;
+    case "buy":     doBuy(parseInt(D('i'),10)); break;
+    case "play":    startPlay(D('id')); break;
+    case "retry":   startPlay(S.mode); break;
+
+    /* ── MATH ── */
+    case "math-pick": mathPick(parseInt(D('i'),10)); break;
+    case "math-next": mathNext(); break;
+
+    /* ── MCQ ── */
+    case "mcq-pick": mcqPick(parseInt(D('i'),10)); break;
+    case "mcq-next": mcqNext(); break;
+
+    /* ── MEMORY ── */
+    case "mem-tap":  memTap(parseInt(D('c'),10)); break;
+    case "mem-done": finish(S.g.pts,1); break;
+
+    /* ── WORD ── */
+    case "word-check":  wordCheck(); break;
+    case "word-reveal": S.g.reveal=true; render(); break;
+    case "word-next":   wordNext(); break;
+
+    /* ── WRITING ── */
+    case "wr-submit": wrSubmit(); break;
+    case "wr-next":   wrNext(); break;
+
+    /* ── SITUATION ── */
+    case "si-submit": siSubmit(); break;
+    case "si-next":   siNext(); break;
+
+    /* ── STRESS ── */
+    case "st-hint":   S.g.hint=true; render(); break;
+    case "st-opt":    S.g.sel=parseInt(D('i'),10); render(); break;
+    case "st-submit": stSubmit(); break;
+    case "st-done":   finish(S.g.score,1); break;
+
+    /* ── FOCUS ── */
+    case "fo-start":
+      S.g.phase="playing"; render();
+      startTick(function(){
+        if(S.g.kind==="odd")      focusEnd(0,"Time ran out — speed matters here.");
+        else if(S.g.kind==="rapid") foRapid();
+        else if(S.g.kind==="stroop") focusEnd(0,"Time ran out.");
+        else render();
+      });
+      break;
+    case "fo-odd": {
+      const i=parseInt(D('i'),10);
+      focusEnd(i===S.g.idx ? Math.max(20,S.g.t*6) : 0,
+               i===S.g.idx ? "Found it — sharp visual scanning." : "That was not the odd shape.");
+      break;
+    }
+    case "fo-tap": {
+      const i=parseInt(D('i'),10);
+      S.g.taps[i]=true; render();
+      break;
+    }
+    case "fo-rapid": foRapid(); break;
+    case "fo-count": {
+      const n=document.getElementById('fo-in');
+      const v=parseInt((n?n.value:''),10);
+      if(isNaN(v)){ toast("Enter a number first."); break; }
+      const diff=Math.abs(v-S.g.answer);
+      focusEnd(diff===0?65:Math.max(0,65-diff*14),
+               diff===0?"Exact count — excellent sustained attention.":"Actual count was "+S.g.answer+".");
+      break;
+    }
+    case "fo-stroop":   S.g.val=D('c'); render(); break;
+    case "fo-stroopgo":
+      focusEnd(S.g.val===S.g.answer?70:0,
+               S.g.val===S.g.answer?"Correct — you overrode the word's interference.":"The ink colour was "+S.g.answer+".");
+      break;
+    case "fo-done": finish(S.g.score,1); break;
+
+    /* ── READING ── */
+    case "rd-open":
+      S.g.book=D('id'); S.g.phase="read"; S.g.ch=0; S.g.qi=0; S.g.sel=null; S.g.score=0;
+      window.scrollTo(0,0); render(); break;
+    case "rd-quiz": S.g.phase="quiz"; S.g.qi=0; S.g.sel=null; window.scrollTo(0,0); render(); break;
+    case "rd-pick": {
+      if(S.g.sel!==null) break;
+      const bk=BOOKS.find(b=>b.id===S.g.book);
+      const pool=RQUIZ[S.g.book+"_"+S.g.ch];
+      const i=parseInt(D('i'),10), ok=(i===pool[S.g.qi].a);
+      S.g.sel={i:i,ok:ok};
+      if(ok){ S.g.score+=40; scorePop(40); }
+      render(); break;
+    }
+    case "rd-next": {
+      const bk=BOOKS.find(b=>b.id===S.g.book);
+      const pool=RQUIZ[S.g.book+"_"+S.g.ch];
+      if(S.g.qi+1 < pool.length){ S.g.qi++; S.g.sel=null; render(); }
+      else if(S.g.ch+1 < bk.chapters.length){
+        S.g.ch++; S.g.qi=0; S.g.sel=null; S.g.phase="read"; window.scrollTo(0,0); render();
+      }
+      else finish(S.g.score, bk.chapters.length);
+      break;
+    }
+  }
+});
+
+/* keyboard shortcuts */
+document.addEventListener('keydown', function(e){
+  if(e.key!=="Enter") return;
+  if(S.screen==="play" && S.mode==="word" && S.g.fb!=="ok"){ e.preventDefault(); wordCheck(); }
+  if(!S.user && S.onboard<0){ e.preventDefault(); doAuth(); }
+});
+
+/* live word counter */
+document.addEventListener('input', function(e){
+  if(e.target.id==="wr-in"){
+    S.g.text = e.target.value;
+    const c=document.getElementById('wr-count');
+    if(c) c.textContent = wc(e.target.value)+" words";
+  }
+  if(e.target.id==="w-in") S.g.typed = e.target.value.toUpperCase();
+  if(/^si-\d$/.test(e.target.id)) S.g.ans[parseInt(e.target.id.split('-')[1],10)] = e.target.value;
+  if(e.target.id==="st-in") S.g.val = e.target.value;
+});
+
+/* ═══════════════════════════════════════════════════
+   ACTIONS
+═══════════════════════════════════════════════════ */
+function startPlay(id){
+  const used=(S.user.dailySessions||{})[id]||0;
+  if(used>=10){ toast("Daily limit reached for this module."); return; }
+  S.mode=id; S.screen="play";
+  initGame(id);
+  render();
+  if(id==="math") startTick(function(){ render(); });
+  window.scrollTo(0,0);
+}
+
+function doAuth(){
+  const nameEl=document.getElementById('a-name');
+  const mail=(document.getElementById('a-mail')||{}).value||'';
+  const pass=(document.getElementById('a-pass')||{}).value||'';
+  const name=nameEl?nameEl.value:'';
+  const t=S.authTab;
+
+  if(!mail||!pass||(t==="signup"&&!name)){ S.authErr="All fields are required."; render(); return; }
+  if(mail.indexOf('@')<0){ S.authErr="Enter a valid email address."; render(); return; }
+  if(pass.length<4){ S.authErr="Password must be at least 4 characters."; render(); return; }
+
+  const key="praj_"+mail.toLowerCase();
+  if(t==="login"){
+    const st=LS.get(key);
+    if(!st){ S.authErr="No account found. Create one first."; render(); return; }
+    if(st.pass!==pass){ S.authErr="Incorrect password."; render(); return; }
+    if(st.lastLogin!==today()){ st.dailySessions={}; st.lastLogin=today(); LS.set(key,st); }
+    S.user=st; S.screen="home"; S.authErr=""; render();
+    toast("Welcome back, "+st.name.split(' ')[0]+" 🧠");
+  } else {
+    if(LS.get(key)){ S.authErr="That email is already registered."; render(); return; }
+    const u={ email:mail.toLowerCase(), name:name, pass:pass,
+      points:0, gold:0, diamonds:0, level:1, xp:0, totalPts:0, streak:1,
+      lastLogin:today(), dailySessions:{}, totalSessions:0, badges:[],
+      joinDate:new Date().toLocaleDateString('en-IN') };
+    LS.set(key,u);
+    S.pendingMail=mail.toLowerCase();
+    S.onboard=0; S.authErr=""; render();
+  }
+}
+
+function demoAccount(){
+  const mail="demo@prajnify.com", key="praj_"+mail;
+  let u=LS.get(key);
+  if(!u){
+    u={ email:mail, name:"Demo Explorer", pass:"demo",
+        points:47, gold:6, diamonds:0, level:3, xp:340, totalPts:1247, streak:4,
+        lastLogin:today(), dailySessions:{math:3,logic:1,gk:2}, totalSessions:12, badges:[],
+        joinDate:new Date().toLocaleDateString('en-IN') };
+    LS.set(key,u);
+  }
+  if(u.lastLogin!==today()){ u.dailySessions={}; u.lastLogin=today(); LS.set(key,u); }
+  S.user=u; S.screen="home"; render();
+  toast("Demo account loaded — explore freely 🚀");
+}
+
+function doBuy(i){
+  const it=STORE[i], u=S.user;
+  const have = it.cur==="gold" ? u.gold : u.diamonds;
+  if(have < it.cost){ toast("Not enough "+it.cur+". Keep training!"); return; }
+  if(it.cur==="gold") u.gold -= it.cost; else u.diamonds -= it.cost;
+  saveUser(u); render();
+  toast("Purchased: "+it.n+" ✓");
+}
+
+function shareCard(){
+  const u=S.user, iq=iqOf(u), rk=rankOf(iq);
+  const txt =
+    "🧠 PRAJNIFY BRAIN PROFILE\n"+
+    "─────────────────────\n"+
+    u.name+"\n"+
+    "Brain IQ: "+iq+"  ·  "+rk.icon+" "+rk.label+"\n"+
+    "Level "+u.level+"  ·  "+u.streak+"-day streak\n"+
+    "💎 "+u.diamonds+"   🥇 "+u.gold+"   ⚡ "+u.points+"\n"+
+    u.totalSessions+" sessions completed\n"+
+    "─────────────────────\n"+
+    "Verified by Prajnify · prajnify.com";
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(
+      ()=>toast("Brain Profile copied to clipboard ✓"),
+      ()=>toast("Copy failed — select the text manually.")
+    );
+  } else {
+    toast("Clipboard unavailable in this browser.");
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════ */
+(function boot(){
+  const last = LS.get("praj_last");
+  if(last){
+    const u = LS.get("praj_"+last);
+    if(u){
+      if(u.lastLogin!==today()){ u.dailySessions={}; u.lastLogin=today(); LS.set("praj_"+last,u); }
+      S.user=u; S.screen="home";
+    }
+  }
+  render();
+})();
+
+/* remember last session */
+window.addEventListener('beforeunload', function(){
+  if(S.user) LS.set("praj_last", S.user.email);
+});
+setInterval(function(){ if(S.user) LS.set("praj_last", S.user.email); }, 5000);
+
+</script>
+</body>
+</html>
