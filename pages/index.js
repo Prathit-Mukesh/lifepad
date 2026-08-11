@@ -58,7 +58,7 @@ export default function HomePage() {
           <span className="count">
             {chaptersDone > 0
               ? `You: ${chaptersDone}/${TOTAL_CHAPTERS} chapters done`
-              : `${TOTAL_CHAPTERS} chapters · ${TOTAL_CHAPTERS * QUESTIONS_PER_CHAPTER}+ questions · 10 training modules · 12 games`}
+              : `${TOTAL_CHAPTERS} chapters · ${TOTAL_CHAPTERS * QUESTIONS_PER_CHAPTER}+ questions · 10 training modules · 16 games`}
           </span>
         </div>
         <div className="pillars">
@@ -90,10 +90,10 @@ export default function HomePage() {
             <span className="p-meta">Solo · duels · parties</span>
             <h3>Games</h3>
             <p>
-              Word Guess, Word Bloom, Trivia Trek across nine awareness worlds,
-              Emoji Riddles, Number Hunt, Reaction Flash and more for solo play;
-              Tap Duel, Math Duel and Tic-Tac-Toe for one-phone battles;
-              Quiz Party for the whole family with a podium finish.
+              Word Guess, 2048, Word Bloom, Trivia Trek across nine awareness worlds,
+              Emoji Riddles and more for solo play; Tap Duel, Math Duel and Tic-Tac-Toe
+              for one-phone battles; Quiz Party, Would You Rather, Most Likely To and
+              Never Have I Ever for the whole gang.
             </p>
             <span className="p-go">Start playing →</span>
           </Link>
