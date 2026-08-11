@@ -36,9 +36,104 @@ const MOODS = [
 
 const greet = () => { const h = new Date().getHours(); return h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 21 ? 'Good evening' : 'Good night' }
 
+/* ───────── recovery of old LifePad (v3) data ─────────
+   The previous LifePad stored everything under localStorage key
+   "lifepad_v3". Switching to the new app never deleted it — this reads
+   that key and converts it into the current format. The old copy is
+   left untouched as a safety net. */
+const V3_KEY = 'lifepad_v3'
+const readV3 = () => { try { return JSON.parse(localStorage.getItem(V3_KEY)) } catch { return null } }
+
+const v3Summary = (v3) => {
+  if (!v3) return null
+  const counts = {
+    tasks: (v3.tasks || []).length,
+    expenses: (v3.expenses || []).length,
+    notes: (v3.notes || []).length + (v3.gratitude || []).length,
+    habits: (v3.habits || []).length,
+    moods: (v3.moodLog || []).length,
+  }
+  const total = Object.values(counts).reduce((a, b) => a + b, 0)
+  return total > 0 ? { ...counts, total } : null
+}
+
+const migrateV3 = (v3, cur) => {
+  const priMap = { urgent: 'high', high: 'high', medium: 'med', low: 'low' }
+  const catMap = { food: 'food', travel: 'travel', shopping: 'shopping', bills: 'bills', health: 'health', fun: 'fun' }
+  const moodMap = { great: 'great', good: 'good', okay: 'okay', bad: 'low', awful: 'rough' }
+  const next = { ...cur }
+  const haveTask = new Set(cur.tasks.map((t) => t.id))
+  const haveExp = new Set(cur.expenses.map((e) => e.id))
+  const haveNote = new Set(cur.notes.map((n) => n.id))
+  const haveHabit = new Set(cur.habits.map((h) => h.id))
+
+  next.name = cur.name || v3.userName || ''
+  next.tasks = [
+    ...cur.tasks,
+    ...(v3.tasks || []).filter((t) => t && !haveTask.has(t.id)).map((t) => ({
+      id: t.id || uid(),
+      title: [t.name, t.note].filter(Boolean).join(' — ') || 'Untitled task',
+      pri: priMap[t.priority] || 'med',
+      due: t.dueDate || null,
+      done: t.status === 'done',
+      at: Date.parse(t.createdAt) || Date.now(),
+    })),
+  ]
+  next.expenses = [
+    ...cur.expenses,
+    ...(v3.expenses || []).filter((e) => e && !haveExp.has(e.id)).map((e) => ({
+      id: e.id || uid(),
+      amt: Number(e.amount) || 0,
+      cat: catMap[e.category] || 'other',
+      note: e.note || '',
+      date: e.date || dkey(),
+    })).filter((e) => e.amt > 0),
+  ]
+  next.notes = [
+    ...cur.notes,
+    ...(v3.notes || []).filter((n) => n && !haveNote.has(n.id)).map((n, i) => ({
+      id: n.id || uid(),
+      text: [n.title, n.content].filter(Boolean).join('\n') || '(empty note)',
+      color: NOTE_COLORS[i % NOTE_COLORS.length],
+      tilt: ((i % 5) - 2) * 0.7,
+    })),
+    ...(v3.gratitude || []).map((g, i) => ({
+      id: uid(),
+      text: `🙏 ${g.text}\n(${g.date})`,
+      color: NOTE_COLORS[(i + 3) % NOTE_COLORS.length],
+      tilt: ((i % 5) - 2) * 0.7,
+    })),
+  ]
+  next.habits = [
+    ...cur.habits,
+    ...(v3.habits || []).filter((h) => h && !haveHabit.has(h.id)).map((h) => ({
+      id: h.id || uid(),
+      name: [h.icon, h.name].filter(Boolean).join(' '),
+      log: Object.fromEntries((h.completions || []).map((day) => [day, true])),
+    })),
+  ]
+  next.moods = {
+    ...Object.fromEntries((v3.moodLog || []).map((m) => [m.date, moodMap[m.mood] || 'okay'])),
+    ...cur.moods, // current entries win on conflict
+  }
+  return next
+}
+
+const downloadJson = (obj, filename) => {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function LifePadPage() {
   const [d, setD] = useState(null)
   const [tab, setTab] = useState('today')
+  const [oldData, setOldData] = useState(null) // v3 summary if recoverable
+  const [restored, setRestored] = useState(false)
 
   // form state
   const [tTitle, setTTitle] = useState('')
@@ -52,8 +147,36 @@ export default function LifePadPage() {
   const [nColor, setNColor] = useState(NOTE_COLORS[0])
   const [hName, setHName] = useState('')
 
-  useEffect(() => { setD(load()) }, [])
+  useEffect(() => {
+    const cur = load()
+    setD(cur)
+    if (!cur.v3Imported && !cur.v3Dismissed) {
+      const sum = v3Summary(readV3())
+      if (sum) setOldData(sum)
+    }
+  }, [])
   const commit = (next) => { save(next); setD(next) }
+
+  const restoreOld = () => {
+    const v3 = readV3()
+    if (!v3) { setOldData(null); return }
+    const merged = migrateV3(v3, load())
+    merged.v3Imported = true
+    commit(merged)
+    setOldData(null)
+    setRestored(true)
+    setTimeout(() => setRestored(false), 6000)
+  }
+  const dismissOld = () => {
+    commit({ ...load(), v3Dismissed: true })
+    setOldData(null)
+  }
+  const backupAll = () => {
+    downloadJson(
+      { exportedAt: new Date().toISOString(), lifepad: load(), oldLifepadV3: readV3() || undefined },
+      `lifepad-backup-${dkey()}.json`
+    )
+  }
 
   const today = dkey()
   const monthKey = today.slice(0, 7)
@@ -152,6 +275,26 @@ export default function LifePadPage() {
             </span>
           )}
         </h1>
+
+        {oldData && (
+          <div className="lp-card fade-in" style={{ border: '2px dashed var(--marigold)', background: 'var(--card)', marginBottom: 14 }}>
+            <h3>🎉 Found your old LifePad data on this device!</h3>
+            <p style={{ fontSize: '.92rem', color: 'var(--ink-soft)', margin: '4px 0 12px' }}>
+              Your earlier data was never deleted — the new LifePad just stores things under a new name.
+              Recoverable here: <b>{oldData.tasks} tasks · {oldData.expenses} expenses · {oldData.notes} notes · {oldData.habits} habits · {oldData.moods} mood entries</b>.
+            </p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button className="lp-add" onClick={restoreOld}>Restore everything ↻</button>
+              <button className="lp-add" style={{ background: 'var(--card)', color: 'var(--ink)', border: '1.5px solid var(--line)' }} onClick={backupAll}>Download backup first 💾</button>
+              <button className="t-del" style={{ fontSize: '.8rem' }} onClick={dismissOld}>hide</button>
+            </div>
+          </div>
+        )}
+        {restored && (
+          <div className="lp-card fade-in" style={{ borderColor: 'var(--good)', background: 'var(--good-bg)', marginBottom: 14 }}>
+            ✅ <b>Everything restored!</b> Old tasks, expenses, notes, habits and moods are back — and the original copy is still kept safe as a backup.
+          </div>
+        )}
 
         <div className="lp-tabs">
           {TABS.map(([k, l]) => (
@@ -350,7 +493,21 @@ export default function LifePadPage() {
           </div>
         )}
 
-        <div className="hero-note" style={{ marginTop: 26 }}>everything stays on this device — private by design ↷</div>
+        <div className="lp-card" style={{ marginTop: 26 }}>
+          <h3>💾 Data &amp; backup</h3>
+          <p style={{ fontSize: '.85rem', color: 'var(--ink-soft)', marginBottom: 10 }}>
+            Everything lives only in this browser. Download a backup file any time — and if you ever used the older LifePad on this device, you can re-import it here.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="lp-add" onClick={backupAll}>Download backup 💾</button>
+            {v3Summary(typeof window !== 'undefined' ? readV3() : null) && !d.v3Imported && (
+              <button className="lp-add" style={{ background: 'var(--card)', color: 'var(--ink)', border: '1.5px solid var(--line)' }} onClick={restoreOld}>
+                Import old LifePad data ↻
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="hero-note" style={{ marginTop: 20 }}>everything stays on this device — private by design ↷</div>
       </div>
     </>
   )
