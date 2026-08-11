@@ -34,7 +34,7 @@ export default function HomePage() {
             Apps expire. Syllabi get rewritten. AI rewrites job descriptions yearly.
             What compounds is the ability to think clearly, handle numbers, judge evidence,
             and keep learning — at any age. NEEV trains exactly that: structured chapters for
-            your stage of life, the Prajnify brain gym with fresh challenges every single day,
+            your stage of life, the Prajnify brain gym, games to play alone or together,
             and LifePad to run the rest of your life.
           </p>
           <div className="hero-note">school student, college, working or at home — your path is here ↷</div>
@@ -54,11 +54,11 @@ export default function HomePage() {
 
       <section className="section" id="pillars">
         <div className="section-head">
-          <h2>One home, three rooms</h2>
+          <h2>One home, four rooms</h2>
           <span className="count">
             {chaptersDone > 0
               ? `You: ${chaptersDone}/${TOTAL_CHAPTERS} chapters done`
-              : `${TOTAL_CHAPTERS} chapters · ${TOTAL_CHAPTERS * QUESTIONS_PER_CHAPTER}+ questions · 11 training modules`}
+              : `${TOTAL_CHAPTERS} chapters · ${TOTAL_CHAPTERS * QUESTIONS_PER_CHAPTER}+ questions · 10 training modules · 7 games`}
           </span>
         </div>
         <div className="pillars">
@@ -78,20 +78,32 @@ export default function HomePage() {
             <span className="p-meta">Ancient wisdom · modern cognition</span>
             <h3>Prajnify</h3>
             <p>
-              Eleven cognitive training modules — Math Sprint, Logic Grid, Neural Memory,
-              Word Forge, Mind Writer, Situation Intel, Brain Crusher and more. Earn Points,
-              Gold and Diamonds, build your Brain IQ, and keep the streak alive with
-              fresh challenges every day.
+              Ten cognitive training modules — Math Sprint, Logic Grid, Neural Memory,
+              Digit Vault, Word Forge, Focus Lock, Brain Crusher and more. Earn Points,
+              Gold and Diamonds, grow your Brain IQ, and keep the streak alive with
+              fresh challenges every day. No signup — just start.
             </p>
             <span className="p-go">Enter the gym →</span>
           </Link>
+          <Link href="/games" className="pillar">
+            <span className="p-chip" style={{ background: '#E1595C' }}>🎮</span>
+            <span className="p-meta">Solo · duels · parties</span>
+            <h3>Games</h3>
+            <p>
+              Reaction Flash, Number Rush and Memory Pairs for solo sharpening;
+              Tap Duel, Math Duel and Tic-Tac-Toe for head-to-head battles on one phone;
+              Quiz Party for the whole family with a podium finish.
+            </p>
+            <span className="p-go">Start playing →</span>
+          </Link>
           <Link href="/lifepad" className="pillar">
-            <span className="p-chip" style={{ background: '#7C6AFF' }}>✨</span>
+            <span className="p-chip" style={{ background: '#F4B217' }}>✨</span>
             <span className="p-meta">Your personal dashboard</span>
             <h3>LifePad</h3>
             <p>
-              Tasks, expenses, notes, reminders, collections, habits, moods and holidays —
-              your whole life organised in one private place on your device.
+              A calm notebook for real life — tasks with priorities, expense tracking with
+              category insights, sticky notes, habit streaks and daily mood check-ins.
+              Private by design: everything stays on your device.
             </p>
             <span className="p-go">Open LifePad →</span>
           </Link>
