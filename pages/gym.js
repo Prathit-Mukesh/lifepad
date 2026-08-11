@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import SiteNav from '../components/SiteNav'
 
 // Tab 2 — Prajnify: the full cognitive-training app, kept intact as a
@@ -6,6 +7,7 @@ import SiteNav from '../components/SiteNav'
 // It manages its own accounts, currencies, streaks and daily session limits
 // in localStorage; question pools are drawn fresh every session, every day.
 export default function GymPage() {
+  const { basePath } = useRouter()
   return (
     <>
       <Head>
@@ -14,7 +16,7 @@ export default function GymPage() {
       </Head>
       <SiteNav active="gym" />
       <iframe
-        src="/prajnify.html"
+        src={`${basePath}/prajnify.html`}
         title="Prajnify — Ancient Wisdom · Modern Cognition"
         style={{
           display: 'block',
