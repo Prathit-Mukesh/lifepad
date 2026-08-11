@@ -5,6 +5,7 @@ import { makeRng } from '../lib/rng'
 import { generate } from '../lib/generators'
 import { PARTY_POOL, PAIR_EMOJI, GEO } from '../lib/brainbank'
 import { TRIVIA, WORDLE_WORDS, BLOOM_PUZZLES, EMOJI_RIDDLES } from '../lib/trivia'
+import { WYR, MLT, NHIE } from '../lib/instagames'
 
 /* ───────── local bests ───────── */
 const GKEY = 'neev_games_v1'
@@ -27,6 +28,10 @@ const GAMES = [
   { id: 'reaction', icon: '🫲', name: 'Reaction Flash', mode: 'solo', color: '#2EC9B0', desc: 'Wait for green. Tap. How fast are your reflexes?', best: (g) => (g.reactionBest ? `${g.reactionBest} ms avg` : null) },
   { id: 'schulte', icon: '🔢', name: 'Number Rush', mode: 'solo', color: '#38C6F4', desc: 'Tap 1→25 in order. The classic Schulte attention table.', best: (g) => (g.schulteBest ? `${g.schulteBest}s` : null) },
   { id: 'pairs', icon: '🎴', name: 'Memory Pairs', mode: 'solo', color: '#C77DFF', desc: 'Flip and match all 8 pairs in as few moves as possible.', best: (g) => (g.pairsBest ? `${g.pairsBest} moves` : null) },
+  { id: 'g2048', icon: '🔢', name: '2048', mode: 'solo', color: '#FFB44D', desc: 'Swipe, merge, double. The legendary tile puzzle.', best: (g) => (g.g2048Best ? `${g.g2048Best} pts` : null) },
+  { id: 'wyr', icon: '🤔', name: 'Would You Rather', mode: 'group', color: '#5AD6FF', desc: 'Impossible choices, big debates. The insta-story classic.', best: () => null },
+  { id: 'mlt', icon: '👉', name: 'Most Likely To', mode: 'group', color: '#DA9BFF', desc: 'Everyone points on three… two… one. Tally the votes.', best: () => null },
+  { id: 'nhie', icon: '🖐️', name: 'Never Have I Ever', mode: 'group', color: '#FF7FA8', desc: 'Five lives each. The confessions game, family edition.', best: () => null },
   { id: 'tapduel', icon: '⚔️', name: 'Tap Duel', mode: 'duo', color: '#FF5F8F', desc: 'Two players, one screen. First to tap on GO wins. Best of 5.', best: () => null },
   { id: 'mathduel', icon: '🥊', name: 'Math Duel', mode: 'duo', color: '#FF9F2E', desc: 'Face-to-face mental math. First correct answer takes the point.', best: () => null },
   { id: 'ttt', icon: '⭕', name: 'Tic-Tac-Toe', mode: 'duo', color: '#7B5EFF', desc: 'The eternal strategy classic — with a running score.', best: () => null },
@@ -949,6 +954,323 @@ function TriviaTrek({ onExit, bests, setBests }) {
   )
 }
 
+/* ───────── 2048 ───────── */
+const TILE_COLORS = {
+  2: 'rgba(255,255,255,.22)', 4: 'rgba(255,255,255,.32)', 8: '#FFB44D', 16: '#FF9F2E',
+  32: '#FF7FA8', 64: '#FF5F8F', 128: '#DA9BFF', 256: '#9C86FF', 512: '#5AD6FF',
+  1024: '#3EE8CC', 2048: '#FFD97A',
+}
+
+function slideRow(row) {
+  const vals = row.filter(Boolean)
+  const out = []
+  let gained = 0
+  for (let i = 0; i < vals.length; i++) {
+    if (vals[i] === vals[i + 1]) { out.push(vals[i] * 2); gained += vals[i] * 2; i++ }
+    else out.push(vals[i])
+  }
+  while (out.length < 4) out.push(0)
+  return { out, gained }
+}
+
+function moveBoard(board, dir) {
+  // board: flat 16. dir: 0 left, 1 right, 2 up, 3 down
+  const get = (r, c) => board[r * 4 + c]
+  let gained = 0
+  const next = Array(16).fill(0)
+  for (let i = 0; i < 4; i++) {
+    let line
+    if (dir === 0) line = [get(i, 0), get(i, 1), get(i, 2), get(i, 3)]
+    else if (dir === 1) line = [get(i, 3), get(i, 2), get(i, 1), get(i, 0)]
+    else if (dir === 2) line = [get(0, i), get(1, i), get(2, i), get(3, i)]
+    else line = [get(3, i), get(2, i), get(1, i), get(0, i)]
+    const { out, gained: g } = slideRow(line)
+    gained += g
+    for (let j = 0; j < 4; j++) {
+      if (dir === 0) next[i * 4 + j] = out[j]
+      else if (dir === 1) next[i * 4 + (3 - j)] = out[j]
+      else if (dir === 2) next[j * 4 + i] = out[j]
+      else next[(3 - j) * 4 + i] = out[j]
+    }
+  }
+  return { next, gained, moved: next.some((v, k) => v !== board[k]) }
+}
+
+const addTile = (board) => {
+  const empty = board.map((v, i) => (v ? -1 : i)).filter((i) => i >= 0)
+  if (!empty.length) return board
+  const b = [...board]
+  b[empty[Math.floor(Math.random() * empty.length)]] = Math.random() < 0.9 ? 2 : 4
+  return b
+}
+
+const canMove = (b) => b.includes(0) || b.some((v, i) => {
+  const r = Math.floor(i / 4), c = i % 4
+  return (c < 3 && v === b[i + 1]) || (r < 3 && v === b[i + 4])
+})
+
+function Game2048({ onExit, bests, setBests }) {
+  const [board, setBoard] = useState(() => addTile(addTile(Array(16).fill(0))))
+  const [score, setScore] = useState(0)
+  const touch = useRef(null)
+  const over = !canMove(board)
+  const won = board.includes(2048)
+
+  const doMove = (dir) => {
+    if (over) return
+    const { next, gained, moved } = moveBoard(board, dir)
+    if (!moved) return
+    const nb = addTile(next)
+    const ns = score + gained
+    setBoard(nb)
+    setScore(ns)
+    const g = { ...bests }
+    if (!g.g2048Best || ns > g.g2048Best) { g.g2048Best = ns; saveG(g); setBests(g) }
+  }
+
+  useEffect(() => {
+    const h = (e) => {
+      const dirs = { ArrowLeft: 0, ArrowRight: 1, ArrowUp: 2, ArrowDown: 3 }
+      if (dirs[e.key] !== undefined) { e.preventDefault(); doMove(dirs[e.key]) }
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  })
+
+  const onTouchStart = (e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }
+  const onTouchEnd = (e) => {
+    if (!touch.current) return
+    const dx = e.changedTouches[0].clientX - touch.current.x
+    const dy = e.changedTouches[0].clientY - touch.current.y
+    touch.current = null
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return
+    if (Math.abs(dx) > Math.abs(dy)) doMove(dx > 0 ? 1 : 0)
+    else doMove(dy > 0 ? 3 : 2)
+  }
+
+  const restart = () => { setBoard(addTile(addTile(Array(16).fill(0)))); setScore(0) }
+
+  return (
+    <div className="acard glow" style={{ '--gc': 'rgba(255,180,77,.25)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span className="a-eyebrow" style={{ color: '#FFB44D' }}>swipe or use arrow keys</span>
+        <span className="a-eyebrow" style={{ color: '#FFD97A' }}>score {score}{bests.g2048Best ? ` · best ${bests.g2048Best}` : ''}</span>
+      </div>
+      <div className="g2048-board" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        {board.map((v, i) => (
+          <div key={i} className={`g2048-cell${v ? ' pop' : ''}`}
+            style={v ? { background: TILE_COLORS[v] || '#FFD97A', color: v >= 8 ? '#2A1444' : '#fff' } : {}}>
+            {v || ''}
+          </div>
+        ))}
+      </div>
+      {(over || won) && (
+        <div style={{ textAlign: 'center', marginTop: 14 }}>
+          <div style={{ fontFamily: 'Young Serif', fontSize: '1.4rem', color: won ? '#FFD97A' : '#FF7FA8' }}>
+            {won ? '🏆 2048! You actually did it!' : 'No moves left!'}
+          </div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 10 }}>
+            <button className="abtn" style={{ '--bc': '#FFB44D', color: '#2A1444' }} onClick={restart}>Play again</button>
+            <button className="abtn ghost" onClick={onExit}>← Games</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ───────── Would You Rather ───────── */
+const pseudoPct = (text) => {
+  let h = 0
+  for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) % 997
+  return 28 + (h % 45) // 28–72%
+}
+
+function WouldYouRather({ onExit }) {
+  const [deck] = useState(() => shuffle(WYR))
+  const [i, setI] = useState(0)
+  const [picked, setPicked] = useState(null)
+  const [a, b] = deck[i % deck.length]
+  const pctA = pseudoPct(a)
+
+  const next = () => { setI(i + 1); setPicked(null) }
+
+  return (
+    <div className="acard glow" style={{ '--gc': 'rgba(90,214,255,.25)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span className="a-eyebrow" style={{ color: '#5AD6FF' }}>round {i + 1} · debate it out loud!</span>
+      </div>
+      <div className="prompt-big" style={{ margin: '4px 0 14px' }}>Would you rather…</div>
+      <div className="wyr-cards">
+        <button className={`wyr-card a${picked === 0 ? ' picked' : ''}`} onClick={() => picked === null && setPicked(0)}>
+          {a}
+          {picked !== null && <div style={{ fontSize: '1.4rem', marginTop: 8 }}>{pctA}% chose this</div>}
+        </button>
+        <div className="wyr-or">— OR —</div>
+        <button className={`wyr-card b${picked === 1 ? ' picked' : ''}`} onClick={() => picked === null && setPicked(1)}>
+          {b}
+          {picked !== null && <div style={{ fontSize: '1.4rem', marginTop: 8 }}>{100 - pctA}% chose this</div>}
+        </button>
+      </div>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 }}>
+        {picked !== null && <button className="abtn" style={{ '--bc': '#5AD6FF', color: '#12303E' }} onClick={next}>Next dilemma →</button>}
+        <button className="abtn ghost" onClick={onExit}>← Games</button>
+      </div>
+    </div>
+  )
+}
+
+/* ───────── Most Likely To ───────── */
+function MostLikelyTo({ onExit }) {
+  const [phase, setPhase] = useState('setup')
+  const [players, setPlayers] = useState(['', ''])
+  const [scores, setScores] = useState([])
+  const [round, setRound] = useState(0)
+  const deck = useRef([])
+  const ROUNDS = 10
+  const names = players.map((p, j) => p.trim() || `Player ${j + 1}`)
+
+  const start = () => {
+    deck.current = shuffle(MLT)
+    setScores(players.map(() => 0))
+    setRound(0)
+    setPhase('play')
+  }
+  const vote = (pi) => {
+    const s = [...scores]; s[pi] += 1
+    setScores(s)
+    if (round + 1 >= ROUNDS) setPhase('done')
+    else setRound(round + 1)
+  }
+
+  if (phase === 'setup') {
+    return (
+      <div className="acard glow" style={{ '--gc': 'rgba(218,155,255,.25)' }}>
+        <div className="a-eyebrow" style={{ color: '#DA9BFF', marginBottom: 12 }}>👉 most likely to · who&apos;s playing?</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {players.map((p, j) => (
+            <div key={j} style={{ display: 'flex', gap: 8 }}>
+              <input className="a-input" placeholder={`Player ${j + 1} name`} value={p}
+                onChange={(e) => setPlayers(players.map((x, k) => (k === j ? e.target.value : x)))} />
+              {players.length > 2 && <button className="abtn ghost sm" onClick={() => setPlayers(players.filter((_, k) => k !== j))}>✕</button>}
+            </div>
+          ))}
+        </div>
+        {players.length < 8 && <button className="abtn ghost sm" style={{ marginTop: 10 }} onClick={() => setPlayers([...players, ''])}>+ Add player</button>}
+        <button className="abtn full" style={{ '--bc': '#DA9BFF', color: '#2A1444', marginTop: 14 }} onClick={start}>Start · {ROUNDS} rounds 👉</button>
+      </div>
+    )
+  }
+
+  if (phase === 'done') {
+    const ranked = names.map((n, j) => ({ n, s: scores[j] })).sort((x, y) => y.s - x.s)
+    return (
+      <div className="acard glow" style={{ '--gc': 'rgba(218,155,255,.25)', textAlign: 'center' }}>
+        <div style={{ fontSize: '2.4rem' }}>👉</div>
+        <div style={{ fontFamily: 'Young Serif', fontSize: '1.5rem', color: '#fff', marginBottom: 12 }}>
+          <span style={{ color: '#DA9BFF' }}>{ranked[0].n}</span> is officially "most likely to…" everything!
+        </div>
+        {ranked.map((p) => <div key={p.n} className="a-sub">{p.n} — {p.s} votes</div>)}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14 }}>
+          <button className="abtn" style={{ '--bc': '#DA9BFF', color: '#2A1444' }} onClick={() => setPhase('setup')}>New game</button>
+          <button className="abtn ghost" onClick={onExit}>← Games</button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="acard glow" style={{ '--gc': 'rgba(218,155,255,.25)', textAlign: 'center' }}>
+      <div className="a-eyebrow" style={{ color: '#DA9BFF' }}>round {round + 1}/{ROUNDS} · point on 3…2…1 — then tap the winner</div>
+      <div className="prompt-big">Who is most likely to<br /><span style={{ color: '#DA9BFF' }}>{deck.current[round % deck.current.length]}?</span></div>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {names.map((n, pi) => (
+          <button key={pi} className="life-chip" onClick={() => vote(pi)}>
+            <b>{n}</b><span style={{ color: '#DA9BFF' }}>{scores[pi]} votes</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ───────── Never Have I Ever ───────── */
+function NeverHaveIEver({ onExit }) {
+  const LIVES = 5
+  const [phase, setPhase] = useState('setup')
+  const [players, setPlayers] = useState(['', ''])
+  const [lives, setLives] = useState([])
+  const [round, setRound] = useState(0)
+  const deck = useRef([])
+  const names = players.map((p, j) => p.trim() || `Player ${j + 1}`)
+
+  const start = () => {
+    deck.current = shuffle(NHIE)
+    setLives(players.map(() => LIVES))
+    setRound(0)
+    setPhase('play')
+  }
+  const alive = lives.filter((l) => l > 0).length
+  const gameOver = phase === 'play' && (round >= deck.current.length || alive <= 1)
+
+  const drop = (pi) => {
+    if (lives[pi] <= 0) return
+    const l = [...lives]; l[pi] -= 1
+    setLives(l)
+  }
+
+  if (phase === 'setup') {
+    return (
+      <div className="acard glow" style={{ '--gc': 'rgba(255,127,168,.25)' }}>
+        <div className="a-eyebrow" style={{ color: '#FF7FA8', marginBottom: 12 }}>🖐️ never have I ever · five lives each</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {players.map((p, j) => (
+            <div key={j} style={{ display: 'flex', gap: 8 }}>
+              <input className="a-input" placeholder={`Player ${j + 1} name`} value={p}
+                onChange={(e) => setPlayers(players.map((x, k) => (k === j ? e.target.value : x)))} />
+              {players.length > 2 && <button className="abtn ghost sm" onClick={() => setPlayers(players.filter((_, k) => k !== j))}>✕</button>}
+            </div>
+          ))}
+        </div>
+        {players.length < 8 && <button className="abtn ghost sm" style={{ marginTop: 10 }} onClick={() => setPlayers([...players, ''])}>+ Add player</button>}
+        <button className="abtn full" style={{ '--bc': '#FF7FA8', color: '#3E1220', marginTop: 14 }} onClick={start}>Start confessing 🖐️</button>
+      </div>
+    )
+  }
+
+  if (gameOver) {
+    const ranked = names.map((n, j) => ({ n, l: lives[j] })).sort((x, y) => y.l - x.l)
+    return (
+      <div className="acard glow" style={{ '--gc': 'rgba(255,127,168,.25)', textAlign: 'center' }}>
+        <div style={{ fontSize: '2.4rem' }}>😇</div>
+        <div style={{ fontFamily: 'Young Serif', fontSize: '1.5rem', color: '#fff', marginBottom: 12 }}>
+          <span style={{ color: '#FF7FA8' }}>{ranked[0].n}</span> is the most innocent of all!
+        </div>
+        {ranked.map((p) => <div key={p.n} className="a-sub">{p.n} — {'❤️'.repeat(p.l) || '💔 out'}</div>)}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14 }}>
+          <button className="abtn" style={{ '--bc': '#FF7FA8', color: '#3E1220' }} onClick={() => setPhase('setup')}>Play again</button>
+          <button className="abtn ghost" onClick={onExit}>← Games</button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="acard glow" style={{ '--gc': 'rgba(255,127,168,.25)', textAlign: 'center' }}>
+      <div className="a-eyebrow" style={{ color: '#FF7FA8' }}>prompt {round + 1} · tap everyone who HAS done it</div>
+      <div className="prompt-big">Never have I ever<br /><span style={{ color: '#FF7FA8' }}>{deck.current[round]}</span></div>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 16 }}>
+        {names.map((n, pi) => (
+          <button key={pi} className={`life-chip${lives[pi] <= 0 ? ' out' : ''}`} onClick={() => drop(pi)}>
+            <b>{n}</b><span>{'❤️'.repeat(lives[pi]) || '💔'}</span>
+          </button>
+        ))}
+      </div>
+      <button className="abtn" style={{ '--bc': '#FF7FA8', color: '#3E1220' }} onClick={() => setRound(round + 1)}>Next prompt →</button>
+    </div>
+  )
+}
+
 /* ───────── page ───────── */
 export default function GamesPage() {
   const [bests, setBests] = useState({})
@@ -1005,6 +1327,10 @@ export default function GamesPage() {
                 <span className="a-chip" style={{ cursor: 'default', color: g.color, borderColor: `${g.color}55` }}>{g.icon} {g.name} · {MODE_TAG[g.mode]}</span>
                 <button className="abtn ghost sm" onClick={exit}>← All games</button>
               </div>
+              {game === 'g2048' && <Game2048 key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
+              {game === 'wyr' && <WouldYouRather key={playKey} onExit={exit} />}
+              {game === 'mlt' && <MostLikelyTo key={playKey} onExit={exit} />}
+              {game === 'nhie' && <NeverHaveIEver key={playKey} onExit={exit} />}
               {game === 'wordle' && <Wordle key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
               {game === 'bloom' && <Bloom key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
               {game === 'trivia' && <TriviaTrek key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
