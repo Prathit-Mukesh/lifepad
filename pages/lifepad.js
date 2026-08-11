@@ -4,7 +4,7 @@ import SiteNav from '../components/SiteNav'
 
 /* ───────── store ───────── */
 const KEY = 'neev_lifepad_v4'
-const blank = () => ({ name: '', tasks: [], expenses: [], notes: [], habits: [], moods: {} })
+const blank = () => ({ name: '', tasks: [], expenses: [], notes: [], habits: [], moods: {}, reminders: [], collections: [], inbox: [], holidays: [], gratitude: {} })
 const load = () => { try { return { ...blank(), ...(JSON.parse(localStorage.getItem(KEY)) || {}) } } catch { return blank() } }
 const save = (d) => { try { localStorage.setItem(KEY, JSON.stringify(d)) } catch { /* full */ } }
 
@@ -35,6 +35,28 @@ const MOODS = [
 ]
 
 const greet = () => { const h = new Date().getHours(); return h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 21 ? 'Good evening' : 'Good night' }
+
+const COLL_ICONS = ['📋', '🎬', '📚', '✈️', '🎁', '🛍️', '🍽️', '💡', '🎯', '🧳', '🎵', '🌱']
+const REM_TYPES = { general: '🔔', birthday: '🎂', bill: '📃', deadline: '⏰', health: '💊' }
+
+// Indian gazetted holidays 2026 (from the original LifePad)
+const GOV_HOLIDAYS = [
+  { name: 'Republic Day', date: '2026-01-26' }, { name: 'Holi', date: '2026-03-04' },
+  { name: 'Id-ul-Fitr', date: '2026-03-21' }, { name: 'Ram Navami', date: '2026-03-26' },
+  { name: 'Mahavir Jayanti', date: '2026-03-31' }, { name: 'Good Friday', date: '2026-04-03' },
+  { name: 'Buddha Purnima', date: '2026-05-01' }, { name: 'Id-ul-Zuha (Bakrid)', date: '2026-05-27' },
+  { name: 'Muharram', date: '2026-06-26' }, { name: 'Independence Day', date: '2026-08-15' },
+  { name: 'Milad-un-Nabi', date: '2026-08-26' }, { name: 'Mahatma Gandhi Jayanti', date: '2026-10-02' },
+  { name: 'Dussehra', date: '2026-10-20' }, { name: 'Diwali', date: '2026-11-08' },
+  { name: 'Guru Nanak Jayanti', date: '2026-11-24' }, { name: 'Christmas', date: '2026-12-25' },
+]
+const weekday = (iso) => new Date(iso + 'T00:00:00').getDay() // 0 Sun … 6 Sat
+const longWeekend = (iso) => {
+  const d = weekday(iso)
+  if (d === 1 || d === 5) return true            // Mon or Fri → 3-day
+  if (d === 2 || d === 4) return 'bridge'        // Tue/Thu → bridge day makes 4
+  return false
+}
 
 /* ───────── recovery of old LifePad (v3) data ─────────
    The previous LifePad stored everything under localStorage key
@@ -72,9 +94,13 @@ const v3Summary = (v3) => {
   const counts = {
     tasks: (v3.tasks || []).length,
     expenses: (v3.expenses || []).length,
-    notes: (v3.notes || []).length + (v3.gratitude || []).length,
+    notes: (v3.notes || []).length,
     habits: (v3.habits || []).length,
     moods: (v3.moodLog || []).length,
+    reminders: (v3.reminders || []).length,
+    collections: (v3.collections || []).length,
+    inbox: (v3.misc || []).length,
+    gratitude: (v3.gratitude || []).length,
   }
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
   return total > 0 ? { ...counts, total } : null
@@ -120,13 +146,55 @@ const migrateV3 = (v3, cur) => {
       color: NOTE_COLORS[i % NOTE_COLORS.length],
       tilt: ((i % 5) - 2) * 0.7,
     })),
-    ...(v3.gratitude || []).map((g, i) => ({
-      id: uid(),
-      text: `🙏 ${g.text}\n(${g.date})`,
-      color: NOTE_COLORS[(i + 3) % NOTE_COLORS.length],
-      tilt: ((i % 5) - 2) * 0.7,
+  ]
+  const haveRem = new Set((cur.reminders || []).map((r) => r.id))
+  next.reminders = [
+    ...(cur.reminders || []),
+    ...(v3.reminders || []).filter((r) => r && !haveRem.has(r.id)).map((r) => ({
+      id: r.id || uid(),
+      title: r.title || 'Reminder',
+      date: r.date || dkey(),
+      time: r.time || '',
+      repeat: r.repeat || 'none',
+      type: REM_TYPES[r.type] ? r.type : 'general',
+      done: !!r.done,
     })),
   ]
+  const haveColl = new Set((cur.collections || []).map((c) => c.id))
+  next.collections = [
+    ...(cur.collections || []),
+    ...(v3.collections || []).filter((c) => c && !haveColl.has(c.id)).map((c) => ({
+      id: c.id || uid(),
+      name: c.name || 'List',
+      icon: c.icon || '📋',
+      items: (c.items || []).map((it) => ({
+        id: it.id || uid(),
+        text: [it.text, it.thoughts].filter(Boolean).join(' — '),
+        done: !!it.done,
+      })),
+    })),
+  ]
+  const haveInbox = new Set((cur.inbox || []).map((m) => m.id))
+  next.inbox = [
+    ...(cur.inbox || []),
+    ...(v3.misc || []).filter((m) => m && !haveInbox.has(m.id)).map((m) => ({
+      id: m.id || uid(),
+      text: m.content || '',
+      at: Date.parse(m.createdAt) || Date.now(),
+    })).filter((m) => m.text),
+  ]
+  // only import the user's own days off — gazetted holidays are built in
+  const haveHol = new Set((cur.holidays || []).map((h) => h.date + h.name))
+  next.holidays = [
+    ...(cur.holidays || []),
+    ...(v3.holidays || [])
+      .filter((h) => h && h.type !== 'gazetted' && h.date && !haveHol.has(h.date + h.name))
+      .map((h) => ({ id: h.id || uid(), name: h.name || 'Day off', date: h.date })),
+  ]
+  next.gratitude = {
+    ...Object.fromEntries((v3.gratitude || []).filter((g) => g && g.date).map((g) => [g.date, g.text || ''])),
+    ...(cur.gratitude || {}),
+  }
   next.habits = [
     ...cur.habits,
     ...(v3.habits || []).filter((h) => h && !haveHabit.has(h.id)).map((h) => ({
@@ -144,16 +212,23 @@ const migrateV3 = (v3, cur) => {
 
 // Merge another v4-shaped dataset into the current one (dedupe by id)
 const mergeV4 = (cur, inc) => {
-  const ids = (arr) => new Set(arr.map((x) => x.id))
-  const tIds = ids(cur.tasks), eIds = ids(cur.expenses), nIds = ids(cur.notes), hIds = ids(cur.habits)
+  const merge = (a = [], b = []) => {
+    const have = new Set(a.map((x) => x.id))
+    return [...a, ...b.filter((x) => x && !have.has(x.id))]
+  }
   return {
     ...cur,
     name: cur.name || inc.name || '',
-    tasks: [...cur.tasks, ...(inc.tasks || []).filter((x) => x && !tIds.has(x.id))],
-    expenses: [...cur.expenses, ...(inc.expenses || []).filter((x) => x && !eIds.has(x.id))],
-    notes: [...cur.notes, ...(inc.notes || []).filter((x) => x && !nIds.has(x.id))],
-    habits: [...cur.habits, ...(inc.habits || []).filter((x) => x && !hIds.has(x.id))],
+    tasks: merge(cur.tasks, inc.tasks),
+    expenses: merge(cur.expenses, inc.expenses),
+    notes: merge(cur.notes, inc.notes),
+    habits: merge(cur.habits, inc.habits),
+    reminders: merge(cur.reminders, inc.reminders),
+    collections: merge(cur.collections, inc.collections),
+    inbox: merge(cur.inbox, inc.inbox),
+    holidays: merge(cur.holidays, inc.holidays),
     moods: { ...(inc.moods || {}), ...cur.moods },
+    gratitude: { ...(inc.gratitude || {}), ...(cur.gratitude || {}) },
   }
 }
 
@@ -187,6 +262,17 @@ export default function LifePadPage() {
   const [nText, setNText] = useState('')
   const [nColor, setNColor] = useState(NOTE_COLORS[0])
   const [hName, setHName] = useState('')
+  const [rTitle, setRTitle] = useState('')
+  const [rDate, setRDate] = useState('')
+  const [rTime, setRTime] = useState('')
+  const [rType, setRType] = useState('general')
+  const [cName, setCName] = useState('')
+  const [cIcon, setCIcon] = useState('📋')
+  const [collInput, setCollInput] = useState({})
+  const [iText, setIText] = useState('')
+  const [holName, setHolName] = useState('')
+  const [holDate, setHolDate] = useState('')
+  const [gratText, setGratText] = useState('')
 
   useEffect(() => {
     const cur = load()
@@ -316,11 +402,89 @@ export default function LifePadPage() {
   const setMood = (id) => commit({ ...d, moods: { ...d.moods, [today]: id } })
   const todayMood = d ? d.moods[today] : null
 
+  /* reminders */
+  const addReminder = () => {
+    if (!rTitle.trim()) return
+    commit({ ...d, reminders: [...d.reminders, { id: uid(), title: rTitle.trim(), date: rDate || today, time: rTime, repeat: 'none', type: rType, done: false }] })
+    setRTitle(''); setRDate(''); setRTime('')
+  }
+  const togRem = (id) => commit({ ...d, reminders: d.reminders.map((r) => (r.id === id ? { ...r, done: !r.done } : r)) })
+  const delRem = (id) => commit({ ...d, reminders: d.reminders.filter((r) => r.id !== id) })
+  const remSorted = d ? [...d.reminders].sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || ''))) : []
+  const remOverdue = remSorted.filter((r) => !r.done && r.date < today)
+  const remUpcoming = remSorted.filter((r) => !r.done && r.date >= today)
+  const remDone = remSorted.filter((r) => r.done)
+
+  /* collections */
+  const addColl = () => {
+    if (!cName.trim()) return
+    commit({ ...d, collections: [...d.collections, { id: uid(), name: cName.trim(), icon: cIcon, items: [] }] })
+    setCName('')
+  }
+  const delColl = (id) => commit({ ...d, collections: d.collections.filter((c) => c.id !== id) })
+  const addCollItem = (cid) => {
+    const text = (collInput[cid] || '').trim()
+    if (!text) return
+    commit({ ...d, collections: d.collections.map((c) => (c.id === cid ? { ...c, items: [...c.items, { id: uid(), text, done: false }] } : c)) })
+    setCollInput({ ...collInput, [cid]: '' })
+  }
+  const togCollItem = (cid, iid) => commit({ ...d, collections: d.collections.map((c) => (c.id === cid ? { ...c, items: c.items.map((it) => (it.id === iid ? { ...it, done: !it.done } : it)) } : c)) })
+  const delCollItem = (cid, iid) => commit({ ...d, collections: d.collections.map((c) => (c.id === cid ? { ...c, items: c.items.filter((it) => it.id !== iid) } : c)) })
+
+  /* inbox */
+  const addInbox = () => {
+    if (!iText.trim()) return
+    commit({ ...d, inbox: [{ id: uid(), text: iText.trim(), at: Date.now() }, ...d.inbox] })
+    setIText('')
+  }
+  const delInbox = (id) => commit({ ...d, inbox: d.inbox.filter((m) => m.id !== id) })
+  const inboxToTask = (m) => commit({
+    ...d,
+    inbox: d.inbox.filter((x) => x.id !== m.id),
+    tasks: [{ id: uid(), title: m.text, pri: 'med', due: null, done: false, at: Date.now() }, ...d.tasks],
+  })
+  const inboxToNote = (m) => commit({
+    ...d,
+    inbox: d.inbox.filter((x) => x.id !== m.id),
+    notes: [{ id: uid(), text: m.text, color: NOTE_COLORS[d.notes.length % NOTE_COLORS.length], tilt: 0 }, ...d.notes],
+  })
+
+  /* holidays */
+  const allHolidays = d
+    ? [...GOV_HOLIDAYS.map((h) => ({ ...h, id: 'gov-' + h.date, gov: true })), ...d.holidays.map((h) => ({ ...h, gov: false }))]
+      .sort((a, b) => a.date.localeCompare(b.date))
+    : []
+  const addHoliday = () => {
+    if (!holName.trim() || !holDate) return
+    commit({ ...d, holidays: [...d.holidays, { id: uid(), name: holName.trim(), date: holDate }] })
+    setHolName(''); setHolDate('')
+  }
+  const delHoliday = (id) => commit({ ...d, holidays: d.holidays.filter((h) => h.id !== id) })
+  const nextHoliday = allHolidays.find((h) => h.date >= today)
+
+  /* gratitude */
+  const saveGrat = () => {
+    if (!gratText.trim()) return
+    commit({ ...d, gratitude: { ...d.gratitude, [today]: gratText.trim() } })
+    setGratText('')
+  }
+  const gratPast = d ? Object.entries(d.gratitude).filter(([k]) => k !== today).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 3) : []
+
   if (!d) {
     return (<><Head><title>LifePad · NEEV</title></Head><SiteNav active="lifepad" /><div className="lp-wrap"><div className="lp-empty">opening your pad…</div></div></>)
   }
 
-  const TABS = [['today', '☀️ Today'], ['tasks', `✅ Tasks${openTasks.length ? ` (${openTasks.length})` : ''}`], ['money', '💰 Money'], ['notes', '📝 Notes'], ['habits', '🌱 Habits']]
+  const TABS = [
+    ['today', '☀️ Today'],
+    ['tasks', `✅ Tasks${openTasks.length ? ` (${openTasks.length})` : ''}`],
+    ['money', '💰 Money'],
+    ['notes', '📝 Notes'],
+    ['habits', '🌱 Habits'],
+    ['reminders', `🔔 Reminders${remOverdue.length ? ` (${remOverdue.length}!)` : ''}`],
+    ['lists', '📋 Lists'],
+    ['holidays', '🌴 Holidays'],
+    ['inbox', `📎 Inbox${d.inbox.length ? ` (${d.inbox.length})` : ''}`],
+  ]
 
   return (
     <>
@@ -347,7 +511,19 @@ export default function LifePadPage() {
             <h3>🎉 Found your old LifePad data on this device!</h3>
             <p style={{ fontSize: '.92rem', color: 'var(--ink-soft)', margin: '4px 0 12px' }}>
               Your earlier data was never deleted — the new LifePad just stores things under a new name.
-              Recoverable here: <b>{oldData.tasks} tasks · {oldData.expenses} expenses · {oldData.notes} notes · {oldData.habits} habits · {oldData.moods} mood entries</b>.
+              Recoverable here: <b>
+                {[
+                  oldData.tasks && `${oldData.tasks} tasks`,
+                  oldData.expenses && `${oldData.expenses} expenses`,
+                  oldData.notes && `${oldData.notes} notes`,
+                  oldData.reminders && `${oldData.reminders} reminders`,
+                  oldData.collections && `${oldData.collections} collections`,
+                  oldData.inbox && `${oldData.inbox} inbox items`,
+                  oldData.habits && `${oldData.habits} habits`,
+                  oldData.moods && `${oldData.moods} moods`,
+                  oldData.gratitude && `${oldData.gratitude} gratitude entries`,
+                ].filter(Boolean).join(' · ')}
+              </b>.
             </p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button className="lp-add" onClick={restoreOld}>Restore everything ↻</button>
@@ -386,6 +562,32 @@ export default function LifePadPage() {
                 ))}
               </div>
             </div>
+
+            <div className="lp-card">
+              <h3>🙏 One good thing about today</h3>
+              {d.gratitude[today] ? (
+                <p style={{ fontFamily: 'Kalam, cursive', fontSize: '1rem', color: 'var(--ink)' }}>{d.gratitude[today]}</p>
+              ) : (
+                <div className="lp-row">
+                  <input className="lp-input" placeholder="what are you grateful for?" value={gratText}
+                    onChange={(e) => setGratText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveGrat()} />
+                  <button className="lp-add" onClick={saveGrat}>Save</button>
+                </div>
+              )}
+              {gratPast.length > 0 && gratPast.map(([day, text]) => (
+                <p key={day} style={{ fontSize: '.82rem', color: 'var(--ink-soft)', marginTop: 6 }}>· {fmtDay(day)}: {text}</p>
+              ))}
+            </div>
+
+            {nextHoliday && (
+              <div className="lp-card" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: '1.6rem' }}>🌴</span>
+                <div style={{ flex: 1 }}>
+                  <b>{nextHoliday.name}</b>
+                  <div className="t-meta">next holiday · {fmtDay(nextHoliday.date)}{longWeekend(nextHoliday.date) === true ? ' · long weekend! 🎉' : ''}</div>
+                </div>
+              </div>
+            )}
 
             <div className="lp-card">
               <h3>Quick add a task</h3>
@@ -556,6 +758,167 @@ export default function LifePadPage() {
               </div>
             ))}
             {d.habits.length === 0 && <div className="lp-empty">habits compound like money — plant the first seed 🌱</div>}
+          </div>
+        )}
+
+        {/* ─── REMINDERS ─── */}
+        {tab === 'reminders' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="lp-card">
+              <h3>New reminder</h3>
+              <div className="lp-row" style={{ flexWrap: 'wrap' }}>
+                <input className="lp-input" style={{ flex: '2 1 180px' }} placeholder="pay electricity bill…" value={rTitle}
+                  onChange={(e) => setRTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addReminder()} />
+                <input type="date" className="lp-select" value={rDate} onChange={(e) => setRDate(e.target.value)} />
+                <input type="time" className="lp-select" value={rTime} onChange={(e) => setRTime(e.target.value)} />
+                <select className="lp-select" value={rType} onChange={(e) => setRType(e.target.value)}>
+                  {Object.entries(REM_TYPES).map(([k, ico]) => <option key={k} value={k}>{ico} {k}</option>)}
+                </select>
+                <button className="lp-add" onClick={addReminder}>Set</button>
+              </div>
+            </div>
+            {remOverdue.length > 0 && (
+              <div className="lp-card" style={{ borderColor: 'var(--bad)' }}>
+                <h3 style={{ color: 'var(--bad)' }}>Overdue</h3>
+                {remOverdue.map((r) => (
+                  <div key={r.id} className="task-row" style={{ marginBottom: 8 }}>
+                    <button className="t-check" onClick={() => togRem(r.id)} />
+                    <span>{REM_TYPES[r.type] || '🔔'}</span>
+                    <span className="t-title">{r.title}</span>
+                    <span className="t-meta" style={{ color: 'var(--bad)' }}>{fmtDay(r.date)}{r.time ? ` · ${r.time}` : ''}</span>
+                    <button className="t-del" onClick={() => delRem(r.id)}>🗑</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="lp-card">
+              <h3>Upcoming</h3>
+              {remUpcoming.length === 0 && <div className="lp-empty">nothing scheduled — peace 🕊️</div>}
+              {remUpcoming.map((r) => (
+                <div key={r.id} className="task-row" style={{ marginBottom: 8 }}>
+                  <button className="t-check" onClick={() => togRem(r.id)} />
+                  <span>{REM_TYPES[r.type] || '🔔'}</span>
+                  <span className="t-title">{r.title}</span>
+                  {r.repeat && r.repeat !== 'none' && <span className="t-meta">↻ {r.repeat}</span>}
+                  <span className="t-meta">{fmtDay(r.date)}{r.time ? ` · ${r.time}` : ''}</span>
+                  <button className="t-del" onClick={() => delRem(r.id)}>🗑</button>
+                </div>
+              ))}
+            </div>
+            {remDone.length > 0 && (
+              <div className="lp-card">
+                <h3>Done</h3>
+                {remDone.slice(0, 8).map((r) => (
+                  <div key={r.id} className="task-row done-t" style={{ marginBottom: 8 }}>
+                    <button className="t-check on" onClick={() => togRem(r.id)}>✓</button>
+                    <span className="t-title">{r.title}</span>
+                    <span className="t-meta">{fmtDay(r.date)}</span>
+                    <button className="t-del" onClick={() => delRem(r.id)}>🗑</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── LISTS (collections) ─── */}
+        {tab === 'lists' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="lp-card">
+              <h3>New list</h3>
+              <div className="lp-row" style={{ flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                  {COLL_ICONS.map((ic) => (
+                    <button key={ic} onClick={() => setCIcon(ic)}
+                      style={{ fontSize: '1.1rem', padding: '6px 8px', borderRadius: 8, border: cIcon === ic ? '2px solid var(--ink)' : '1.5px solid var(--line)', background: 'var(--paper)', cursor: 'pointer' }}>{ic}</button>
+                  ))}
+                </div>
+                <input className="lp-input" style={{ flex: '1 1 160px' }} placeholder="e.g. Movies to watch" value={cName}
+                  onChange={(e) => setCName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addColl()} />
+                <button className="lp-add" onClick={addColl}>Create</button>
+              </div>
+            </div>
+            {d.collections.length === 0 && <div className="lp-empty">movies, books, bucket list — start any list 📋</div>}
+            {d.collections.map((c) => (
+              <div key={c.id} className="lp-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <span style={{ fontSize: '1.3rem' }}>{c.icon}</span>
+                  <b style={{ flex: 1 }}>{c.name}</b>
+                  <span className="t-meta">{c.items.filter((i) => i.done).length}/{c.items.length}</span>
+                  <button className="t-del" onClick={() => delColl(c.id)}>🗑</button>
+                </div>
+                {c.items.map((it) => (
+                  <div key={it.id} className={`task-row${it.done ? ' done-t' : ''}`} style={{ marginBottom: 6, padding: '9px 12px' }}>
+                    <button className={`t-check${it.done ? ' on' : ''}`} onClick={() => togCollItem(c.id, it.id)}>{it.done ? '✓' : ''}</button>
+                    <span className="t-title" style={{ fontSize: '.9rem' }}>{it.text}</span>
+                    <button className="t-del" onClick={() => delCollItem(c.id, it.id)}>✕</button>
+                  </div>
+                ))}
+                <div className="lp-row" style={{ marginTop: 8 }}>
+                  <input className="lp-input" placeholder={`add to ${c.name}…`} value={collInput[c.id] || ''}
+                    onChange={(e) => setCollInput({ ...collInput, [c.id]: e.target.value })}
+                    onKeyDown={(e) => e.key === 'Enter' && addCollItem(c.id)} />
+                  <button className="lp-add" onClick={() => addCollItem(c.id)}>Add</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ─── HOLIDAYS ─── */}
+        {tab === 'holidays' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="lp-card">
+              <h3>Add your own day off</h3>
+              <div className="lp-row" style={{ flexWrap: 'wrap' }}>
+                <input className="lp-input" style={{ flex: '2 1 160px' }} placeholder="e.g. Personal leave, Trip to Goa" value={holName}
+                  onChange={(e) => setHolName(e.target.value)} />
+                <input type="date" className="lp-select" value={holDate} onChange={(e) => setHolDate(e.target.value)} />
+                <button className="lp-add" onClick={addHoliday}>Add</button>
+              </div>
+            </div>
+            <div className="lp-card">
+              <h3>2026 calendar · {allHolidays.filter((h) => h.date >= today).length} to go</h3>
+              {allHolidays.map((h) => {
+                const past = h.date < today
+                const lw = longWeekend(h.date)
+                return (
+                  <div key={h.id} className="task-row" style={{ marginBottom: 6, opacity: past ? 0.45 : 1 }}>
+                    <span>{h.gov ? '🇮🇳' : '🏖️'}</span>
+                    <span className="t-title">{h.name}</span>
+                    {lw === true && !past && <span className="t-meta" style={{ color: 'var(--good)', fontWeight: 800 }}>🌴 long weekend</span>}
+                    {lw === 'bridge' && !past && <span className="t-meta" style={{ color: 'var(--marigold)' }}>+1 leave = 4 days</span>}
+                    <span className="t-meta">{new Date(h.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                    {!h.gov && <button className="t-del" onClick={() => delHoliday(h.id)}>🗑</button>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ─── INBOX ─── */}
+        {tab === 'inbox' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="lp-card">
+              <h3>Quick dump zone</h3>
+              <p style={{ fontSize: '.82rem', color: 'var(--ink-soft)', marginBottom: 8 }}>Capture anything in two seconds — sort it into tasks or notes later.</p>
+              <div className="lp-row">
+                <input className="lp-input" placeholder="brain dump here…" value={iText}
+                  onChange={(e) => setIText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addInbox()} />
+                <button className="lp-add" onClick={addInbox}>Drop</button>
+              </div>
+            </div>
+            {d.inbox.length === 0 && <div className="lp-empty">inbox zero — beautiful 📎</div>}
+            {d.inbox.map((m) => (
+              <div key={m.id} className="task-row">
+                <span>📎</span>
+                <span className="t-title">{m.text}</span>
+                <button className="lp-add" style={{ padding: '6px 10px', fontSize: '.72rem' }} onClick={() => inboxToTask(m)}>→ Task</button>
+                <button className="lp-add" style={{ padding: '6px 10px', fontSize: '.72rem', background: 'var(--card)', color: 'var(--ink)', border: '1.5px solid var(--line)' }} onClick={() => inboxToNote(m)}>→ Note</button>
+                <button className="t-del" onClick={() => delInbox(m.id)}>🗑</button>
+              </div>
+            ))}
           </div>
         )}
 
