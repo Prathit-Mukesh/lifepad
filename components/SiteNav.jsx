@@ -15,6 +15,7 @@ export default function SiteNav({ active }) {
         <nav className="nav-tabs" aria-label="Main">
           {tab('/learn', 'learn', '📚 Learn')}
           {tab('/gym', 'gym', '🧠 Prajnify')}
+          {tab('/games', 'games', '🎮 Games')}
           {tab('/lifepad', 'lifepad', '✨ LifePad')}
         </nav>
       </div>
