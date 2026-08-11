@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import SiteNav from '../components/SiteNav'
 import { makeRng } from '../lib/rng'
 import { generate } from '../lib/generators'
-import { PARTY_POOL, PAIR_EMOJI } from '../lib/brainbank'
+import { PARTY_POOL, PAIR_EMOJI, GEO } from '../lib/brainbank'
+import { TRIVIA, WORDLE_WORDS, BLOOM_PUZZLES, EMOJI_RIDDLES } from '../lib/trivia'
 
 /* ───────── local bests ───────── */
 const GKEY = 'neev_games_v1'
@@ -18,6 +19,11 @@ const mix = (item) => {
 }
 
 const GAMES = [
+  { id: 'wordle', icon: '🟩', name: 'Word Guess', mode: 'solo', color: '#4ECD7A', desc: 'The famous 5-letter guessing game. Six tries, colour clues.', best: (g) => (g.wordleWon ? `${g.wordleWon} wins · 🔥${g.wordleStreak || 0}` : null) },
+  { id: 'bloom', icon: '🌼', name: 'Word Bloom', mode: 'solo', color: '#FFD060', desc: 'Six letters, 75 seconds — forge every word you can find.', best: (g) => (g.bloomBest ? `${g.bloomBest} pts` : null) },
+  { id: 'trivia', icon: '🌐', name: 'Trivia Trek', mode: 'solo', color: '#38C6F4', desc: 'Nine awareness worlds: movies, history, animals, economy…', best: () => null },
+  { id: 'emoji', icon: '🎭', name: 'Emoji Riddles', mode: 'solo', color: '#FF9F2E', desc: 'Guess the movie from emojis alone. Harder than it looks.', best: (g) => (g.emojiBest ? `${g.emojiBest} pts` : null) },
+  { id: 'numguess', icon: '🎲', name: 'Number Hunt', mode: 'solo', color: '#7B5EFF', desc: 'A secret number between 1 and 100. Corner it in 7 guesses.', best: (g) => (g.numBest ? `${g.numBest} guesses` : null) },
   { id: 'reaction', icon: '🫲', name: 'Reaction Flash', mode: 'solo', color: '#2EC9B0', desc: 'Wait for green. Tap. How fast are your reflexes?', best: (g) => (g.reactionBest ? `${g.reactionBest} ms avg` : null) },
   { id: 'schulte', icon: '🔢', name: 'Number Rush', mode: 'solo', color: '#38C6F4', desc: 'Tap 1→25 in order. The classic Schulte attention table.', best: (g) => (g.schulteBest ? `${g.schulteBest}s` : null) },
   { id: 'pairs', icon: '🎴', name: 'Memory Pairs', mode: 'solo', color: '#C77DFF', desc: 'Flip and match all 8 pairs in as few moves as possible.', best: (g) => (g.pairsBest ? `${g.pairsBest} moves` : null) },
@@ -28,6 +34,13 @@ const GAMES = [
 ]
 const MODES = [['all', 'All'], ['solo', '🧍 Solo'], ['duo', '🧑‍🤝‍🧑 2 Players'], ['group', '👨‍👩‍👧‍👦 Group']]
 const MODE_TAG = { solo: '1 player', duo: '2 players', group: '2–8 players' }
+
+// Quiz Party draws from everything: brainbank + all trivia worlds + emoji riddles
+const PARTY_ALL = [
+  ...PARTY_POOL,
+  ...Object.values(TRIVIA).flatMap((c) => c.items.map((x) => ({ ...x, tag: c.name }))),
+  ...EMOJI_RIDDLES.map((r) => ({ q: `Guess from the emojis:  ${r.e}`, o: r.o, a: r.a, tag: 'Emoji riddle' })),
+]
 
 /* ───────── Reaction Flash ───────── */
 function Reaction({ onExit, bests, setBests }) {
@@ -416,7 +429,7 @@ function QuizParty({ onExit }) {
   const totalQs = players.length * rounds
 
   const start = () => {
-    pool.current = shuffle(PARTY_POOL).slice(0, totalQs + 5).map(mix)
+    pool.current = shuffle(PARTY_ALL).slice(0, totalQs + 5).map(mix)
     setScores(players.map(() => 0))
     setTurn(0)
     setPhase('handoff')
@@ -521,6 +534,421 @@ function QuizParty({ onExit }) {
   )
 }
 
+/* ───────── Word Guess (Wordle-style) ───────── */
+const KB_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', '↵ZXCVBNM⌫']
+
+function evalGuess(guess, answer) {
+  const res = Array(5).fill('miss')
+  const counts = {}
+  for (let i = 0; i < 5; i++) {
+    if (guess[i] === answer[i]) res[i] = 'hit'
+    else counts[answer[i]] = (counts[answer[i]] || 0) + 1
+  }
+  for (let i = 0; i < 5; i++) {
+    if (res[i] === 'hit') continue
+    if (counts[guess[i]] > 0) { res[i] = 'near'; counts[guess[i]] -= 1 }
+  }
+  return res
+}
+
+function Wordle({ onExit, bests, setBests }) {
+  const [answer, setAnswer] = useState(() => WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)])
+  const [rows, setRows] = useState([]) // [{word, marks}]
+  const [cur, setCur] = useState('')
+  const [status, setStatus] = useState('playing') // playing | won | lost
+  const [note, setNote] = useState('')
+
+  const keyState = {}
+  rows.forEach(({ word, marks }) => {
+    word.split('').forEach((ch, i) => {
+      const m = marks[i]
+      if (m === 'hit') keyState[ch] = 'hit'
+      else if (m === 'near' && keyState[ch] !== 'hit') keyState[ch] = 'near'
+      else if (!keyState[ch]) keyState[ch] = 'miss'
+    })
+  })
+
+  const settle = (won, tries) => {
+    const g = { ...bests }
+    g.wordlePlayed = (g.wordlePlayed || 0) + 1
+    if (won) { g.wordleWon = (g.wordleWon || 0) + 1; g.wordleStreak = (g.wordleStreak || 0) + 1 }
+    else g.wordleStreak = 0
+    saveG(g); setBests(g)
+    setStatus(won ? 'won' : 'lost')
+    setNote(won ? ['Genius!', 'Magnificent!', 'Splendid!', 'Great!', 'Nice!', 'Phew!'][tries - 1] : `The word was ${answer}`)
+  }
+
+  const key = (k) => {
+    if (status !== 'playing') return
+    if (k === '⌫') { setCur(cur.slice(0, -1)); return }
+    if (k === '↵') {
+      if (cur.length !== 5) { setNote('5 letters needed'); setTimeout(() => setNote(''), 900); return }
+      const marks = evalGuess(cur, answer)
+      const next = [...rows, { word: cur, marks }]
+      setRows(next)
+      setCur('')
+      if (cur === answer) settle(true, next.length)
+      else if (next.length >= 6) settle(false, 6)
+      return
+    }
+    if (/^[A-Z]$/.test(k) && cur.length < 5) setCur(cur + k)
+  }
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === 'Enter') key('↵')
+      else if (e.key === 'Backspace') key('⌫')
+      else if (/^[a-zA-Z]$/.test(e.key)) key(e.key.toUpperCase())
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  })
+
+  const again = () => {
+    setAnswer(WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)])
+    setRows([]); setCur(''); setStatus('playing'); setNote('')
+  }
+
+  return (
+    <div className="acard glow" style={{ '--gc': 'rgba(78,205,122,.2)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+        <span className="a-eyebrow" style={{ color: '#4ECD7A' }}>guess the 5-letter word · {6 - rows.length} tries left</span>
+        <span className="a-eyebrow" style={{ color: '#FFD060' }}>🔥 streak {bests.wordleStreak || 0}</span>
+      </div>
+      <div className="wordle-grid">
+        {Array.from({ length: 6 }, (_, r) => (
+          <div className="wordle-row" key={r}>
+            {Array.from({ length: 5 }, (_, c) => {
+              const done = rows[r]
+              const ch = done ? done.word[c] : r === rows.length ? cur[c] : ''
+              const cls = done ? ` ${done.marks[c]}` : ch ? ' filled' : ''
+              return <div key={c} className={`wordle-tile${cls}`}>{ch || ''}</div>
+            })}
+          </div>
+        ))}
+      </div>
+      <div className={`a-feedback ${status === 'won' ? 'good' : status === 'lost' ? 'bad' : ''}`}>{note}</div>
+      {status === 'playing' ? (
+        <div className="kb">
+          {KB_ROWS.map((row) => (
+            <div className="kb-row" key={row}>
+              {row.split('').map((k) => (
+                <button key={k} className={`kb-key${'↵⌫'.includes(k) ? ' wide' : ''}${keyState[k] ? ` ${keyState[k]}` : ''}`} onClick={() => key(k)}>
+                  {k === '↵' ? 'ENTER' : k === '⌫' ? 'DEL' : k}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12 }}>
+          <button className="abtn" style={{ '--bc': '#4ECD7A' }} onClick={again}>New word</button>
+          <button className="abtn ghost" onClick={onExit}>← Games</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ───────── Word Bloom ───────── */
+function Bloom({ onExit, bests, setBests }) {
+  const TIME = 75
+  const [puz] = useState(() => BLOOM_PUZZLES[Math.floor(Math.random() * BLOOM_PUZZLES.length)])
+  const [typed, setTyped] = useState([]) // indices into puz.letters
+  const [found, setFound] = useState([])
+  const [score, setScore] = useState(0)
+  const [left, setLeft] = useState(TIME)
+  const [flash, setFlash] = useState(null)
+  const doneRef = useRef(false)
+  const scoreRef = useRef(0)
+
+  useEffect(() => {
+    const id = setInterval(() => setLeft((x) => {
+      if (x <= 1) {
+        clearInterval(id)
+        if (!doneRef.current) {
+          doneRef.current = true
+          const g = { ...bests }
+          if (!g.bloomBest || scoreRef.current > g.bloomBest) g.bloomBest = scoreRef.current
+          saveG(g); setBests(g)
+        }
+        return 0
+      }
+      return x - 1
+    }), 1000)
+    return () => clearInterval(id)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const word = typed.map((i) => puz.letters[i]).join('')
+
+  const submit = () => {
+    if (word.length < 3) { setFlash({ t: 'too short', bad: true }); setTyped([]); return }
+    if (found.includes(word)) { setFlash({ t: 'already found', bad: true }); setTyped([]); return }
+    if (puz.words.includes(word)) {
+      const pts = word.length * 5
+      scoreRef.current += pts
+      setScore(scoreRef.current)
+      setFound([...found, word])
+      setFlash({ t: `+${pts} · ${word}!`, bad: false })
+    } else {
+      setFlash({ t: 'not in this bloom', bad: true })
+    }
+    setTyped([])
+    setTimeout(() => setFlash(null), 900)
+  }
+
+  if (left <= 0) {
+    return (
+      <div className="acard glow" style={{ '--gc': 'rgba(255,208,96,.2)', textAlign: 'center' }}>
+        <div style={{ fontSize: '2.4rem' }}>🌼</div>
+        <div style={{ fontFamily: 'Young Serif', fontSize: '2rem', color: '#FFD060' }}>{score} pts</div>
+        <div className="a-sub" style={{ marginBottom: 8 }}>{found.length} words found · best ever {bests.bloomBest || score} pts</div>
+        <div className="a-sub" style={{ fontSize: '.8rem', marginBottom: 14 }}>some you missed: {puz.words.filter((w) => !found.includes(w)).slice(0, 6).join(' · ')}</div>
+        <button className="abtn ghost" onClick={onExit}>← Games</button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="acard glow" style={{ '--gc': 'rgba(255,208,96,.2)', textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <span className="a-eyebrow" style={{ color: '#FFD060' }}>make words (3+ letters) · {found.length} found</span>
+        <span className="a-eyebrow" style={{ color: left <= 10 ? '#FF5F8F' : '#FFD060' }}>⏱ {left}s · {score} pts</span>
+      </div>
+      <div className="a-timebar"><i style={{ width: `${(left / TIME) * 100}%` }} /></div>
+      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '.3em', color: '#fff', minHeight: 36 }}>
+        {word || <span style={{ color: 'var(--amut)' }}>tap letters…</span>}
+      </div>
+      <div className={`a-feedback ${flash ? (flash.bad ? 'bad' : 'good') : ''}`}>{flash?.t || ''}</div>
+      <div className="bloom-letters">
+        {puz.letters.map((L, i) => (
+          <button key={i} className={`bloom-letter${typed.includes(i) ? ' used' : ''}`} onClick={() => setTyped([...typed, i])}>{L}</button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 9, justifyContent: 'center' }}>
+        <button className="abtn ghost sm" onClick={() => setTyped(typed.slice(0, -1))}>⌫ undo</button>
+        <button className="abtn ghost sm" onClick={() => setTyped([])}>clear</button>
+        <button className="abtn sm" style={{ '--bc': '#FFD060', color: '#12122e' }} onClick={submit} disabled={word.length < 3}>submit ↵</button>
+      </div>
+      {found.length > 0 && (
+        <div className="bloom-found">{found.map((w) => <span key={w}>{w}</span>)}</div>
+      )}
+    </div>
+  )
+}
+
+/* ───────── Number Hunt ───────── */
+function NumberHunt({ onExit, bests, setBests }) {
+  const [target, setTarget] = useState(() => 1 + Math.floor(Math.random() * 100))
+  const [val, setVal] = useState('')
+  const [tries, setTries] = useState([]) // {n, hint}
+  const [won, setWon] = useState(false)
+
+  const guess = () => {
+    const n = parseInt(val, 10)
+    if (!n || n < 1 || n > 100) return
+    if (n === target) {
+      const count = tries.length + 1
+      const g = { ...bests }
+      if (!g.numBest || count < g.numBest) g.numBest = count
+      saveG(g); setBests(g)
+      setWon(true)
+      setTries([...tries, { n, hint: '🎯' }])
+    } else {
+      setTries([...tries, { n, hint: n < target ? '📈 higher' : '📉 lower' }])
+    }
+    setVal('')
+  }
+
+  const again = () => { setTarget(1 + Math.floor(Math.random() * 100)); setTries([]); setWon(false); setVal('') }
+
+  return (
+    <div className="acard glow" style={{ '--gc': 'rgba(123,94,255,.2)', textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+        <span className="a-eyebrow" style={{ color: '#7B5EFF' }}>1 – 100 · smart par: 7 guesses</span>
+        <span className="a-eyebrow" style={{ color: '#FFD060' }}>{tries.length} guess{tries.length === 1 ? '' : 'es'}{bests.numBest ? ` · best ${bests.numBest}` : ''}</span>
+      </div>
+      {won ? (
+        <div style={{ padding: '14px 0' }}>
+          <div style={{ fontSize: '2.4rem' }}>🎯</div>
+          <div style={{ fontFamily: 'Young Serif', fontSize: '2rem', color: '#7B5EFF' }}>{target} — got it in {tries.length}!</div>
+          <div className="a-sub" style={{ marginBottom: 14 }}>
+            {tries.length <= 5 ? 'Better than binary search — brilliant!' : tries.length <= 7 ? 'Right on par. Halving works.' : 'Tip: always guess the middle of what remains.'}
+          </div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <button className="abtn" style={{ '--bc': '#7B5EFF' }} onClick={again}>New number</button>
+            <button className="abtn ghost" onClick={onExit}>← Games</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="a-sub" style={{ marginBottom: 12 }}>I&apos;m thinking of a number. Halve the range with every guess.</div>
+          <div style={{ display: 'flex', gap: 9, maxWidth: 300, margin: '0 auto' }}>
+            <input className="a-input center" style={{ letterSpacing: '.1em' }} inputMode="numeric" placeholder="?" value={val} autoFocus
+              onChange={(e) => setVal(e.target.value.replace(/\D/g, '').slice(0, 3))}
+              onKeyDown={(e) => e.key === 'Enter' && guess()} />
+            <button className="abtn" style={{ '--bc': '#7B5EFF' }} onClick={guess} disabled={!val}>Guess</button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column-reverse', gap: 6, marginTop: 16, maxHeight: 200, overflowY: 'auto' }}>
+            {tries.map((t, i) => (
+              <div key={i} className="a-sub" style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>
+                <b style={{ color: '#fff', fontFamily: 'JetBrains Mono, monospace' }}>{t.n}</b> {t.hint}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+/* ───────── Emoji Riddles ───────── */
+function EmojiGame({ onExit, bests, setBests }) {
+  const [items] = useState(() => shuffle(EMOJI_RIDDLES).slice(0, 10).map(mix))
+  const [i, setI] = useState(0)
+  const [sel, setSel] = useState(null)
+  const [score, setScore] = useState(0)
+  const [done, setDone] = useState(false)
+  const item = items[i]
+
+  const pick = (oi) => {
+    if (sel !== null) return
+    setSel(oi)
+    const ns = score + (oi === item.a ? 10 : 0)
+    setScore(ns)
+    setTimeout(() => {
+      if (i + 1 >= items.length) {
+        const g = { ...bests }
+        if (!g.emojiBest || ns > g.emojiBest) g.emojiBest = ns
+        saveG(g); setBests(g)
+        setDone(true)
+      } else { setI(i + 1); setSel(null) }
+    }, oi === item.a ? 600 : 1300)
+  }
+
+  if (done) {
+    return (
+      <div className="acard glow" style={{ '--gc': 'rgba(255,159,46,.2)', textAlign: 'center' }}>
+        <div style={{ fontSize: '2.4rem' }}>🎭</div>
+        <div style={{ fontFamily: 'Young Serif', fontSize: '2rem', color: '#FF9F2E' }}>{score}/100</div>
+        <div className="a-sub" style={{ marginBottom: 14 }}>
+          {score >= 90 ? 'Certified film buff! 🍿' : score >= 60 ? 'Solid movie radar.' : 'More popcorn required. 🍿'}
+        </div>
+        <button className="abtn ghost" onClick={onExit}>← Games</button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="acard glow" style={{ '--gc': 'rgba(255,159,46,.2)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span className="a-eyebrow" style={{ color: '#FF9F2E' }}>guess the movie · {i + 1}/10</span>
+        <span className="a-eyebrow" style={{ color: '#FFD060' }}>score {score}</span>
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 'clamp(2.4rem,9vw,3.4rem)', letterSpacing: '.12em', margin: '14px 0 22px' }}>{item.e}</div>
+      <div className="a-grid2 keep2">
+        {item.o.map((o, oi) => {
+          let cls = 'a-opt'
+          if (sel !== null) { if (oi === item.a) cls += ' ok'; else if (oi === sel) cls += ' bad'; else cls += ' dim' }
+          return <button key={oi} className={cls} disabled={sel !== null} onClick={() => pick(oi)}>{o}</button>
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ───────── Trivia Trek ───────── */
+const TREK_CATS = [
+  { key: 'geo', name: 'Geography', icon: '🗺️', color: '#7EDD62', items: GEO },
+  ...Object.entries(TRIVIA).map(([key, c]) => ({ key, name: c.name, icon: c.icon, color: c.color, items: c.items })),
+]
+
+function TriviaTrek({ onExit, bests, setBests }) {
+  const [cat, setCat] = useState(null)
+  const [items, setItems] = useState([])
+  const [i, setI] = useState(0)
+  const [sel, setSel] = useState(null)
+  const [score, setScore] = useState(0)
+  const [done, setDone] = useState(false)
+
+  const start = (c) => {
+    setCat(c)
+    setItems(shuffle(c.items).slice(0, 10).map(mix))
+    setI(0); setSel(null); setScore(0); setDone(false)
+  }
+
+  if (!cat) {
+    const tb = bests.triviaBest || {}
+    return (
+      <div>
+        <div className="a-sub" style={{ marginBottom: 14 }}>Pick a world. Ten questions. How aware are you really?</div>
+        <div className="mod-grid">
+          {TREK_CATS.map((c) => (
+            <button key={c.key} className="mod-tile" style={{ '--mc': c.color }} onClick={() => start(c)}>
+              <span className="m-ico">{c.icon}</span>
+              <h3>{c.name}</h3>
+              <p>{c.items.length} questions in the pool</p>
+              <span className="m-meta"><span style={{ color: c.color }}>{tb[c.key] !== undefined ? `best ${tb[c.key]}/100` : 'unexplored'}</span><span>play ▶</span></span>
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (done) {
+    return (
+      <div className="acard glow" style={{ '--gc': `${cat.color}33`, textAlign: 'center' }}>
+        <div style={{ fontSize: '2.4rem' }}>{cat.icon}</div>
+        <div style={{ fontFamily: 'Young Serif', fontSize: '2rem', color: cat.color }}>{score}/100</div>
+        <div className="a-sub" style={{ marginBottom: 14 }}>
+          {score >= 90 ? `${cat.name} master — take a bow.` : score >= 60 ? 'Well travelled. Push for mastery.' : 'Every wrong answer just taught you something.'}
+        </div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+          <button className="abtn" style={{ '--bc': cat.color }} onClick={() => start(cat)}>Replay</button>
+          <button className="abtn ghost" onClick={() => setCat(null)}>All worlds</button>
+          <button className="abtn ghost" onClick={onExit}>← Games</button>
+        </div>
+      </div>
+    )
+  }
+
+  const item = items[i]
+  const pick = (oi) => {
+    if (sel !== null) return
+    setSel(oi)
+    const ns = score + (oi === item.a ? 10 : 0)
+    setScore(ns)
+    setTimeout(() => {
+      if (i + 1 >= items.length) {
+        const g = { ...bests }
+        const tb = { ...(g.triviaBest || {}) }
+        if (tb[cat.key] === undefined || ns > tb[cat.key]) tb[cat.key] = ns
+        g.triviaBest = tb
+        saveG(g); setBests(g)
+        setDone(true)
+      } else { setI(i + 1); setSel(null) }
+    }, oi === item.a ? 550 : 1400)
+  }
+
+  return (
+    <div className="acard glow" style={{ '--gc': `${cat.color}33` }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span className="a-eyebrow" style={{ color: cat.color }}>{cat.icon} {cat.name} · {i + 1}/10</span>
+        <span className="a-eyebrow" style={{ color: '#FFD060' }}>score {score}</span>
+      </div>
+      <div className="a-big-q txt">{item.q}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        {item.o.map((o, oi) => {
+          let cls = 'a-opt left'
+          if (sel !== null) { if (oi === item.a) cls += ' ok'; else if (oi === sel) cls += ' bad'; else cls += ' dim' }
+          return <button key={oi} className={cls} disabled={sel !== null} onClick={() => pick(oi)}>{o}</button>
+        })}
+      </div>
+    </div>
+  )
+}
+
 /* ───────── page ───────── */
 export default function GamesPage() {
   const [bests, setBests] = useState({})
@@ -577,6 +1005,11 @@ export default function GamesPage() {
                 <span className="a-chip" style={{ cursor: 'default', color: g.color, borderColor: `${g.color}55` }}>{g.icon} {g.name} · {MODE_TAG[g.mode]}</span>
                 <button className="abtn ghost sm" onClick={exit}>← All games</button>
               </div>
+              {game === 'wordle' && <Wordle key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
+              {game === 'bloom' && <Bloom key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
+              {game === 'trivia' && <TriviaTrek key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
+              {game === 'emoji' && <EmojiGame key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
+              {game === 'numguess' && <NumberHunt key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
               {game === 'reaction' && <Reaction key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
               {game === 'schulte' && <Schulte key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
               {game === 'pairs' && <Pairs key={playKey} onExit={exit} bests={bests} setBests={setBests} />}
