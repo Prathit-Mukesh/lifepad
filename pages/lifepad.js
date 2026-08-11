@@ -42,7 +42,30 @@ const greet = () => { const h = new Date().getHours(); return h < 5 ? 'Good nigh
    that key and converts it into the current format. The old copy is
    left untouched as a safety net. */
 const V3_KEY = 'lifepad_v3'
-const readV3 = () => { try { return JSON.parse(localStorage.getItem(V3_KEY)) } catch { return null } }
+// Scan ALL localStorage keys for anything that looks like old LifePad data
+// (covers lifepad_v3, older variants, renamed keys) and return the richest one.
+const readV3 = () => {
+  try {
+    const direct = JSON.parse(localStorage.getItem(V3_KEY))
+    if (direct && typeof direct === 'object') return direct
+  } catch { /* fall through to scan */ }
+  try {
+    let best = null
+    let bestScore = 0
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (!k || k === KEY || !/lifepad|life_pad/i.test(k)) continue
+      try {
+        const v = JSON.parse(localStorage.getItem(k))
+        if (!v || typeof v !== 'object') continue
+        const score = (v.tasks?.length || 0) + (v.expenses?.length || 0) + (v.notes?.length || 0)
+          + (v.habits?.length || 0) + (v.moodLog?.length || 0) + (v.gratitude?.length || 0)
+        if (score > bestScore) { best = v; bestScore = score }
+      } catch { /* not JSON */ }
+    }
+    return best
+  } catch { return null }
+}
 
 const v3Summary = (v3) => {
   if (!v3) return null
@@ -119,6 +142,24 @@ const migrateV3 = (v3, cur) => {
   return next
 }
 
+// Merge another v4-shaped dataset into the current one (dedupe by id)
+const mergeV4 = (cur, inc) => {
+  const ids = (arr) => new Set(arr.map((x) => x.id))
+  const tIds = ids(cur.tasks), eIds = ids(cur.expenses), nIds = ids(cur.notes), hIds = ids(cur.habits)
+  return {
+    ...cur,
+    name: cur.name || inc.name || '',
+    tasks: [...cur.tasks, ...(inc.tasks || []).filter((x) => x && !tIds.has(x.id))],
+    expenses: [...cur.expenses, ...(inc.expenses || []).filter((x) => x && !eIds.has(x.id))],
+    notes: [...cur.notes, ...(inc.notes || []).filter((x) => x && !nIds.has(x.id))],
+    habits: [...cur.habits, ...(inc.habits || []).filter((x) => x && !hIds.has(x.id))],
+    moods: { ...(inc.moods || {}), ...cur.moods },
+  }
+}
+
+const looksV3 = (o) => o && (Array.isArray(o.moodLog) || 'userName' in o || (o.tasks || []).some((t) => t && 'name' in t && !('title' in t)))
+const looksV4 = (o) => o && (o.moods !== undefined || (o.tasks || []).some((t) => t && 'title' in t) || 'name' in o)
+
 const downloadJson = (obj, filename) => {
   const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -176,6 +217,31 @@ export default function LifePadPage() {
       { exportedAt: new Date().toISOString(), lifepad: load(), oldLifepadV3: readV3() || undefined },
       `lifepad-backup-${dkey()}.json`
     )
+  }
+
+  const [importMsg, setImportMsg] = useState(null)
+  const importFile = (file) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const raw = JSON.parse(reader.result)
+        let cur = load()
+        let did = []
+        // our backup wrapper
+        const v4 = raw.lifepad && looksV4(raw.lifepad) ? raw.lifepad : looksV4(raw) && !looksV3(raw) ? raw : null
+        const v3 = raw.oldLifepadV3 || (looksV3(raw) ? raw : null)
+        if (v4) { cur = mergeV4(cur, v4); did.push('current-format data') }
+        if (v3 && v3Summary(v3)) { cur = migrateV3(v3, cur); did.push('old LifePad data') }
+        if (!did.length) { setImportMsg({ ok: false, t: 'That file does not look like a LifePad backup.' }); return }
+        cur.v3Imported = true
+        commit(cur)
+        setOldData(null)
+        setImportMsg({ ok: true, t: `Imported ${did.join(' + ')} — everything is back! ✅` })
+      } catch {
+        setImportMsg({ ok: false, t: 'Could not read that file — is it the .json backup?' })
+      }
+    }
+    reader.readAsText(file)
   }
 
   const today = dkey()
@@ -496,16 +562,29 @@ export default function LifePadPage() {
         <div className="lp-card" style={{ marginTop: 26 }}>
           <h3>💾 Data &amp; backup</h3>
           <p style={{ fontSize: '.85rem', color: 'var(--ink-soft)', marginBottom: 10 }}>
-            Everything lives only in this browser. Download a backup file any time — and if you ever used the older LifePad on this device, you can re-import it here.
+            Everything lives only in this browser. Download a backup file any time, or import one to bring data back.
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button className="lp-add" onClick={backupAll}>Download backup 💾</button>
+            <label className="lp-add" style={{ background: 'var(--card)', color: 'var(--ink)', border: '1.5px solid var(--line)', cursor: 'pointer' }}>
+              Import backup file 📂
+              <input type="file" accept=".json,application/json" style={{ display: 'none' }}
+                onChange={(e) => { if (e.target.files?.[0]) importFile(e.target.files[0]); e.target.value = '' }} />
+            </label>
             {v3Summary(typeof window !== 'undefined' ? readV3() : null) && !d.v3Imported && (
               <button className="lp-add" style={{ background: 'var(--card)', color: 'var(--ink)', border: '1.5px solid var(--line)' }} onClick={restoreOld}>
                 Import old LifePad data ↻
               </button>
             )}
           </div>
+          {importMsg && (
+            <p style={{ fontSize: '.85rem', fontWeight: 700, marginTop: 10, color: importMsg.ok ? 'var(--good)' : 'var(--bad)' }}>{importMsg.t}</p>
+          )}
+          <p style={{ fontSize: '.78rem', color: 'var(--ink-soft)', marginTop: 12, lineHeight: 1.7 }}>
+            🔎 <b>Looking for older data?</b> Browser data stays with the exact <b>link + browser + device</b> where it was saved.
+            Open the same link you used before, in the same browser — a &quot;Found your old LifePad data&quot; banner will appear there automatically.
+            Then tap <i>Download backup</i> on that page and <i>Import backup file</i> here to carry everything over.
+          </p>
         </div>
         <div className="hero-note" style={{ marginTop: 20 }}>everything stays on this device — private by design ↷</div>
       </div>
